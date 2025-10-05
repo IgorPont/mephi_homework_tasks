@@ -6,8 +6,11 @@ version = "0.1.0"
 description = "Решения домашних и сессионных заданий НИЯУ МИФИ по прикладному анализу данных и ML"
 authors = ["IgorPont <pontigor11@gmail.com>"]
 readme = "README.md"
-# директория, которая является проектом
-packages = [{ include = "mephi_homework_tasks" }]
+# директории-пакеты, которые входят в проект
+packages = [
+  { include = "homework_tasks" },
+  { include = "sessions_tasks" }
+]
 
 # Основные зависимости (будут устанавливаться всегда)
 [tool.poetry.dependencies]
@@ -71,7 +74,7 @@ ignore = ["E203", "E501"]
 [tool.ruff.lint.isort]
 # Настройка сортировки импортов (isort)
 # мой проект
-known-first-party = ["mephi_homework_tasks"]
+known-first-party = ["homework_tasks", "sessions_tasks"]
 # объединять "import x as y" в одну строку
 combine-as-imports = true
 
