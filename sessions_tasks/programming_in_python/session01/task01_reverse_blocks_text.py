@@ -24,22 +24,37 @@ class TextBlockReverser:
     """
 
     def __init__(self, block_size: int = 3) -> None:
-        # размер блока с предложениями, по дефолту = 3
+        """
+        Инициализирует экземпляр класса TextBlockReverser.
+
+        Аргументы:
+            block_size (int): Количество предложений в одном блоке (по умолчанию — 3).
+        """
         self.block_size = block_size
 
     @staticmethod
     def _reverse_sentence(sentence: str) -> str:
         """
-        Переворачивает слова внутри предложения.
-        Возвращает строку с перевернутыми словами.
+        Переворачивает порядок слов внутри одного предложения.
+
+        Аргументы:
+            sentence (str): Исходное предложение.
+
+        Возвращает:
+            str: Предложение с перевернутым порядком слов.
         """
         words = sentence.strip().split()
         return " ".join(reversed(words))
 
     def _split_by_empty_lines(self, lines: list[str]) -> list[list[str]]:
         """
-        Разделяет строки на блоки по пустым строкам.
-        Возвращает список со списками блоков по строкам.
+        Разделяет текст на блоки по пустым строкам.
+
+        Аргументы:
+            lines (list[str]): Список строк текста, где каждая строка — отдельное предложение.
+
+        Возвращает:
+            list[list[str]]: Список блоков, каждый из которых представляет собой список строк (предложений).
         """
         blocks: list[list[str]] = []
         current_block: list[str] = []
@@ -59,24 +74,28 @@ class TextBlockReverser:
 
     def _split_fixed_size(self, lines: list[str]) -> list[list[str]]:
         """
-        Делит список строк на блоки фиксированного размера.
-        Возвращает список со списками строк, разделенными на блоки установленного размера.
+        Делит текст на блоки фиксированного размера (по числу предложений).
+
+        Аргументы:
+            lines (list[str]): Список строк текста, где каждая строка — отдельное предложение.
+
+        Возвращает:
+            list[list[str]]: Список блоков, разделенных по количеству предложений.
 
         Пример:
-            при block_size = 3 и входных строках:
-            ["a", "b", "c", "d", "e", "f", "g"]
+            При block_size = 3 и входных строках:
+                ["a", "b", "c", "d", "e", "f", "g"]
 
-            результат:
-            [
-                ["a", "b", "c"],
-                ["d", "e", "f"],
-                ["g"]
-            ]
+            Результат:
+                [
+                    ["a", "b", "c"],
+                    ["d", "e", "f"],
+                    ["g"]
+                ]
         """
         blocks: list[list[str]] = []
         total_lines = len(lines)
 
-        # Идем по списку с шагом размера блока
         for start_index in range(0, total_lines, self.block_size):
             end_index = start_index + self.block_size
             block = lines[start_index:end_index]
@@ -86,9 +105,15 @@ class TextBlockReverser:
 
     def process_lines(self, lines: list[str]) -> str:
         """
-        Обрабатывает список строк и возвращает текст:
-            - Пустые строки используются как разделители блоков (если есть);
-            - Либо деление происходит по block_size.
+        Обрабатывает список строк и возвращает результат.
+
+        Аргументы:
+            lines (list[str]): Список строк исходного текста.
+
+        Возвращает:
+            str: Текст, где в каждом предложении слова перевернуты, а порядок предложений сохранен.
+                 Пустые строки используются как разделители блоков (если есть),
+                 либо деление выполняется по параметру block_size.
         """
         has_empty = any(line.strip() == "" for line in lines)
         blocks = self._split_by_empty_lines(lines) if has_empty else self._split_fixed_size(lines)
@@ -102,7 +127,14 @@ class TextBlockReverser:
 
     def process_file(self, input_path: Path, output_path: Path) -> None:
         """
-        Читает файл, обрабатывает и сохраняет результат
+        Обрабатывает текстовый файл, разделяя его на блоки и переворачивая слова в предложениях.
+
+        Аргументы:
+            input_path (Path): Путь к входному файлу с исходным текстом.
+            output_path (Path): Путь к выходному файлу, куда будет записан результат.
+
+        Исключения:
+            FileNotFoundError: Если входной файл не найден.
         """
         if not input_path.exists():
             raise FileNotFoundError(f"Файл {input_path} не найден")
@@ -118,9 +150,15 @@ class TextBlockReverser:
 
 def reverse_blocks_text(input_file: str | Path, output_file: str | Path, block_size: int = 3) -> None:
     """
-    Запуск напрямую через функцию-обертку.
-    Пример запуска:
-        `reverse_blocks_text("input.txt", "output.txt")`
+    Функция-обертка для быстрого запуска обработки текстового файла.
+
+    Аргументы:
+        input_file (str | Path): Путь к входному файлу.
+        output_file (str | Path): Путь к выходному файлу.
+        block_size (int): Количество предложений в блоке (по умолчанию — 3).
+
+    Пример использования:
+        reverse_blocks_text("input.txt", "output.txt")
     """
     reverser = TextBlockReverser(block_size=block_size)
     reverser.process_file(Path(input_file), Path(output_file))
@@ -128,8 +166,8 @@ def reverse_blocks_text(input_file: str | Path, output_file: str | Path, block_s
 
 if __name__ == "__main__":
     """
-    Запуск через poetry:
-        `poetry run python sessions_tasks/programming_in_python/session01/task01_reverse_blocks_text.py`
+    Пример запуска через Poetry:
+        poetry run python sessions_tasks/programming_in_python/session01/task01_reverse_blocks_text.py
     """
     reverse_blocks_text(
         input_file="sessions_tasks/programming_in_python/session01/input/task01_input.txt",
