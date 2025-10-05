@@ -8,8 +8,8 @@ authors = ["IgorPont <pontigor11@gmail.com>"]
 readme = "README.md"
 # директории-пакеты, которые входят в проект
 packages = [
-  { include = "homework_tasks" },
-  { include = "sessions_tasks" }
+    { include = "homework_tasks" },
+    { include = "sessions_tasks" }
 ]
 
 # Основные зависимости (будут устанавливаться всегда)
@@ -69,7 +69,7 @@ fix = true
 select = ["E", "F", "W", "I", "UP", "B", "C4", "SIM", "RUF"]
 
 # Игнорируем правила, которые конфликтуют с Black
-ignore = ["E203", "E501"]
+ignore = ["E203", "E501", "RUF001", "RUF002", "RUF003"]
 
 [tool.ruff.lint.isort]
 # Настройка сортировки импортов (isort)
