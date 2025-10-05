@@ -1,53 +1,68 @@
 [tool.poetry]
-# Основные метаданные проекта
-name = "mephi-homework-tasks"   # имя проекта (по нему можно будет импортировать как пакет)
-version = "0.1.0"               # версия проекта (semver)
-description = "Домашние задания МИФИ по прикладному анализу данных и ML"
+# имя проекта (по нему можно будет импортировать как пакет)
+name = "mephi-homework-tasks"
+# версия проекта
+version = "0.1.0"
+description = "Решения домашних и сессионных заданий НИЯУ МИФИ по прикладному анализу данных и ML"
 authors = ["IgorPont <pontigor11@gmail.com>"]
 readme = "README.md"
-packages = [{ include = "mephi_homework_tasks" }]  # указываем, какую папку считать пакетом
+# директория, которая является проектом
+packages = [{ include = "mephi_homework_tasks" }]
 
-[tool.poetry.dependencies]
 # Основные зависимости (будут устанавливаться всегда)
-python = "^3.13"             # версия Python, с которой проект совместим
-numpy = "^2.1.1"             # работа с массивами, линейная алгебра
-pandas = "^2.2.3"            # таблицы (DataFrame), работа с данными
-scikit-learn = "^1.5.2"      # алгоритмы машинного обучения
-matplotlib = "^3.9.2"        # визуализация (графики, диаграммы)
+[tool.poetry.dependencies]
+# совместимая версия Python
+python = "^3.13"
+# работа с массивами
+numpy = "^2.1.1"
+# таблицы (DataFrame), работа с данными
+pandas = "^2.2.3"
+# алгоритмы машинного обучения
+scikit-learn = "^1.5.2"
+# визуализация (графики, диаграммы)
+matplotlib = "^3.9.2"
 
-# Опциональные зависимости — нужны только для работы в Jupyter
-jupyterlab = { version = "^4.2.5", optional = true } # удобная среда для ноутбуков
-ipykernel = { version = "^6.29.5", optional = true } # ядро Python для запуска в Jupyter
+# Опциональные зависимости (для работы в Jupyter)
+# удобная среда для ноутбуков
+jupyterlab = { version = "^4.2.5", optional = true }
+# ядро Python для запуска в Jupyter
+ipykernel = { version = "^6.29.5", optional = true }
 
 [tool.poetry.extras]
-# Группа "notebooks" — ставится командой `poetry install -E notebooks`
+# Группа "notebooks" (ставится командой "poetry install -E notebooks")
 notebooks = ["jupyterlab", "ipykernel"]
 
 [tool.poetry.group.dev.dependencies]
-# Зависимости для разработки (не попадают в продакшн)
-ruff = "^0.6.9"    # быстрый линтер (заменяет flake8 + isort + часть pylint)
-black = "^24.10.0" # автоформаттер кода
-pytest = "^8.3.3"  # тестовый фреймворк
+# Зависимости для разработки
+# быстрый линтер (заменяет flake8 + isort + часть pylint)
+ruff = "^0.6.9"
+# автоформаттер кода
+black = "^24.10.0"
+# тестовый фреймворк
+pytest = "^8.3.3"
 
 [build-system]
 # Как собирать проект (Poetry Core отвечает за упаковку)
 requires = ["poetry-core>=1.9.0"]
 build-backend = "poetry.core.masonry.api"
 
-# -------- Ruff (линтер + isort) --------
+# Ruff (линтер + isort)
 [tool.ruff]
-line-length = 100        # максимальная длина строки
-target-version = "py313" # целевая версия Python
-fix = true               # автоматически исправлять ошибки (где можно)
+# максимальная длина строки
+line-length = 120
+# целевая версия Python
+target-version = "py313"
+# автоматически исправлять ошибки (где можно)
+fix = true
 
 [tool.ruff.lint]
 # Включаем категории правил:
-# - E, W, F  = стандартные ошибки/варнинги (pycodestyle + pyflakes)
-# - I        = сортировка импортов (isort)
-# - UP       = устаревшие конструкции
-# - B        = best practices (flake8-bugbear)
-# - C4, SIM  = оптимизация кода, упрощения
-# - RUF      = специфические проверки Ruff
+# - E, W, F = стандартные ошибки/варнинги (pycodestyle + pyflakes)
+# - I = сортировка импортов (isort)
+# - UP = устаревшие конструкции
+# - B = best practices (flake8-bugbear)
+# - C4, SIM = оптимизация кода, упрощения
+# - RUF = специфические проверки Ruff
 select = ["E", "F", "W", "I", "UP", "B", "C4", "SIM", "RUF"]
 
 # Игнорируем правила, которые конфликтуют с Black
@@ -55,15 +70,21 @@ ignore = ["E203", "E501"]
 
 [tool.ruff.lint.isort]
 # Настройка сортировки импортов (isort)
-known-first-party = ["mephi_homework_tasks"] # свой проект
-combine-as-imports = true                     # объединять `import x as y` в одну строку
+# мой проект
+known-first-party = ["mephi_homework_tasks"]
+# объединять "import x as y" в одну строку
+combine-as-imports = true
 
-# -------- Black (форматтер) --------
+# Black (форматтер)
 [tool.black]
-line-length = 100           # длина строки (синхронизирована с Ruff)
-target-version = ["py313"]  # форматируем под Python 3.13
+# длина строки (синхронизирована с Ruff)
+line-length = 120
+# форматируем под Python 3.13
+target-version = ["py313"]
 
-# -------- Pytest --------
+# Pytest
 [tool.pytest.ini_options]
-addopts = "-q"         # тихий режим вывода (только статусы тестов)
-testpaths = ["tests"]  # искать тесты в папке tests/
+# тихий режим вывода (только статусы тестов)
+addopts = "-q"
+# искать тесты в папке tests/
+testpaths = ["tests"]
