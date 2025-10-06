@@ -44,6 +44,7 @@ def is_brackets_balanced(s: str) -> bool:
         print(is_brackets_balanced("()[]{}")) # True
         print(is_brackets_balanced("([)]")) # False
     """
+    # ключ - закрывающая скобка, значение - открывающая скобка
     pairs: Dict[str, str] = {")": "(", "]": "[", "}": "{"}
     stack: list[str] = []
 
