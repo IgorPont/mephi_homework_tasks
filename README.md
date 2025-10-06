@@ -38,6 +38,12 @@ poetry run pytest
 
 # Тихий режим (только статусы)
 poetry run pytest -q
+
+# Запуск только тестов по заданию
+poetry run pytest tests/sessions_tasks/programming_in_python/session01/test_task06_schrodinger_eraser.py -v
+
+# Проверить один тест внутри модуля
+poetry run pytest tests/sessions_tasks/programming_in_python/session01/test_task06_schrodinger_eraser.py::test_erase_in_file_io -v
 ```
 
 ---
