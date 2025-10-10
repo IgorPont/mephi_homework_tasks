@@ -13,7 +13,8 @@ x = sp.Symbol('x')
 # f = 2 * x**3 * sp.ln(x)
 # f = x / (x**2 + 1)
 # f = sp.sqrt(1 + x**2)
-f = (x**4) + (5*x)
+# f = (x**4) + (5*x)
+f = x**3/4 - 3*x
 
 # 3️⃣ Находим первую производную
 f_prime = sp.diff(f, x)
@@ -22,7 +23,7 @@ f_prime = sp.diff(f, x)
 f_double_prime = sp.diff(f, x, 2)
 
 # 5️⃣ Подставляем значение для конкретной точки
-x_value = 5
+x_value = 4
 f_prime_value = f_prime.subs(x, x_value)
 f_double_prime_at_value = f_double_prime.subs(x, x_value)
 
