@@ -1,119 +1,115 @@
 """
-Градиентный спуск для функции Розенброка с бэктрек-линейным поиском (Armijo).
-- Дает эталонную реализацию градиентного спуска (GD) с выбором шага по правилу
-      Армихо (backtracking line search).
-- Показывает, как подключить аналитический градиент и как сравнить с SciPy BFGS.
+УНИВЕРСАЛЬНЫЙ градиентный спуск с бэктрек-линейным поиском (Armijo) + CLI + реестр + ИНТЕРАКТИВ
++ ранняя остановка по стабилизации f + автовыбор стартовой точки.
 
-ЦЕЛЕВАЯ ФУНКЦИЯ
----------------
-Используем классическую "банановую" функцию Розенброка в R^2:
-    f(x, y) = (1 - x)^2 + 100 * (y - x^2)^2
+Фишки
+-----
+- Любая скалярная f(x: np.ndarray) -> float, R^n -> R.
+- Градиент строится автоматически (JAX, если установлен; иначе центральная разность).
+- Реестр готовых функций: rosenbrock, rosenbrock_nd, quadratic2d, rastrigin, himmelblau, beale, polyquartic2d.
+- CLI + интерактив:
+    * можно выбрать функцию из списка;
+    * можно ввести свою формулу;
+    * можно включить автоподбор начальной точки (--auto-x0 или вопрос в интерактиве).
+- Ранняя остановка по стабилизации функции: если |Δf| мал на протяжении окна — стоп.
 
-Ее градиент:
-    ∂f/∂x = -2 + 2x - 400x(y - x^2)
-    ∂f/∂y = 200(y - x^2)
-
-Глобальный минимум: (x*, y*) = (1, 1).
-
-АЛГОРИТМ
+Алгоритм
 --------
-Итерация градиентного спуска:
-    x_{k+1} = x_k - α_k * ∇f(x_k),
-где α_k выбираем бэктрекингом (Armijo):
-    f(x + α p) ≤ f(x) + c * α * ⟨∇f(x), p⟩, p = -∇f(x),
-с параметрами по умолчанию c=1e-4, rho=0.5.
+GD: x_{k+1} = x_k - α_k ∇f(x_k),  p_k = -∇f(x_k).
+Armijo backtracking подбирает α_k: f(x+αp) ≤ f(x) + c α <∇f(x), p>.
 
-КРИТЕРИИ ОСТАНОВКИ
-------------------
-1) ||∇f(x_k)||_2 < tol_grad
-2) ||x_{k+1} - x_k||_2 < tol_step
-3) Достигнут max_iter
+Останов
+-------
+- ||∇f||_2 < tol_grad
+- ||Δx||_2 < tol_step
+- Стабилизация f: последние patience_f итераций имеют |Δf| < tol_f
+- k >= max_iter
 
-ПРАКТИЧЕСКИЕ СОВЕТЫ
--------------------
-- Для "узких долин" (Rosenbrock) фиксированный шаг зачастую нестабилен.
-  Линейный поиск резко улучшает сходимость.
-- Не печатайте лог каждую итерацию: это тормозит. Логируйте редко (log_every).
-- Проверьте, что f и ∇f возвращают конечные значения — иначе прекращайте (diverge guard).
-
-ПРИМЕР
-------
->>> import numpy as np
->>> x0 = (0.0, 0.0)
->>> gd = GradientDescent(f=rosenbrock, g=rosenbrock_grad, step=1.0, use_backtracking=True)
->>> x_star, f_star, iters, _ = gd.run(x0)
->>> np.allclose(x_star, np.array([1.0, 1.0]), atol=1e-4)
-True
-
-СРАВНЕНИЕ СО SCIPY
-------------------
-В конце модуля, в блоке __main__, показан запуск:
-    - "ручного рассчета" GD,
-    - SciPy minimize(method="BFGS") с аналитическим градиентом.
-
-ЗАВИСИМОСТИ
+CLI примеры
 -----------
-numpy, scipy (для сравнения), dataclasses (встроенный), typing.
+python -m optimization.universal_gd                             # интерактив
+python -m optimization.universal_gd --list                      # показать все функции
+python -m optimization.universal_gd --func rosenbrock --x0 0,0
+python -m optimization.universal_gd --func rosenbrock_nd --x0 2.4,1.5,2.1,0.7,1.1
+python -m optimization.universal_gd --func polyquartic2d --auto-x0 --compare-scipy
+python -m optimization.universal_gd --func rastrigin --x0 0,0,0,0,0 --grad-policy finite
 """
 
+from __future__ import annotations
+
 from dataclasses import dataclass
-from typing import Callable, Tuple, List
+from typing import Callable, Tuple, List, Optional, Dict
+import argparse
+import sys
+from math import isfinite
 import numpy as np
 from numpy.typing import NDArray
-from math import isfinite
-from scipy.optimize import minimize
+from collections import deque
+
+# SciPy – опционально, только для сравнения
+try:
+    from scipy.optimize import minimize
+
+    _HAS_SCIPY = True
+except Exception:
+    _HAS_SCIPY = False
 
 
 # =========================
-#  ЦЕЛЕВАЯ ФУНКЦИЯ И ГРАДИЕНТ
+#  Автогенерация градиента
 # =========================
 
-def rosenbrock(xy: NDArray[np.floating]) -> float:
+def _central_diff_grad(
+        f: Callable[[NDArray[np.floating]], float],
+        eps: float = 1e-8
+) -> Callable[[NDArray[np.floating]], NDArray[np.floating]]:
+    """N-мерная центральная разность (стабильно и без зависимостей)."""
+
+    def g(x: NDArray[np.floating]) -> NDArray[np.floating]:
+        x = np.asarray(x, dtype=float)
+        n = x.size
+        grad = np.empty(n, dtype=float)
+        for i in range(n):
+            h = eps * max(1.0, abs(x[i]))
+            ei = np.zeros(n, dtype=float)
+            ei[i] = 1.0
+            fp = f(x + h * ei)
+            fm = f(x - h * ei)
+            grad[i] = (fp - fm) / (2.0 * h)
+        return grad
+
+    return g
+
+
+def make_gradient(
+        f: Callable[[NDArray[np.floating]], float],
+        prefer: str = "auto",
+        eps: float = 1e-8
+) -> Callable[[NDArray[np.floating]], NDArray[np.floating]]:
     """
-    Значение функции Розенброка.
-
-    Параметры
-    ---------
-    xy : np.ndarray shape (2,)
-        Точка (x, y).
-
-    Возвращает
-    ----------
-    float
-        Значение f(x, y) = (1 - x)^2 + 100 * (y - x^2)^2.
-
-    Замечания
-    ---------
-    - Функция имеет узкую долину, ведущую к глобальному минимуму в (1, 1).
-    - Чувствительна к выбору шага в простом GD без line search.
+    Конструирует ∇f:
+      - "auto": попробовать JAX, иначе central-diff
+      - "jax":  JAX, при ошибке — fallback на central-diff
+      - "finite": всегда central-diff
     """
-    x, y = float(xy[0]), float(xy[1])
-    return (1.0 - x) ** 2 + 100.0 * (y - x ** 2) ** 2
+    if prefer in ("auto", "jax"):
+        try:
+            import jax
+            import jax.numpy as jnp
 
+            def f_jax(x_jnp: "jnp.ndarray") -> "jnp.ndarray":
+                return jnp.asarray(f(np.array(x_jnp, dtype=float)), dtype=jnp.float_)
 
-def rosenbrock_grad(xy: NDArray[np.floating]) -> NDArray[np.floating]:
-    """
-    Аналитический градиент функции Розенброка.
+            g_jax = jax.jit(jax.jacfwd(f_jax))
 
-    Параметры
-    ---------
-    xy : np.ndarray shape (2,)
-        Точка (x, y).
+            def g(x: NDArray[np.floating]) -> NDArray[np.floating]:
+                return np.array(g_jax(np.asarray(x, dtype=float)), dtype=float)
 
-    Возвращает
-    ----------
-    np.ndarray shape (2,)
-        Вектор градиента [df/dx, df/dy].
+            return g
+        except Exception:
+            pass
 
-    Формулы
-    -------
-        df/dx = -2 + 2x - 400x(y - x^2)
-        df/dy = 200(y - x^2)
-    """
-    x, y = float(xy[0]), float(xy[1])
-    dx = -2.0 + 2.0 * x - 400.0 * x * (y - x ** 2)
-    dy = 200.0 * (y - x ** 2)
-    return np.array([dx, dy], dtype=float)
+    return _central_diff_grad(f, eps=eps)
 
 
 # =========================
@@ -129,145 +125,109 @@ def backtracking_armijo(
         c: float = 1e-4,
         rho: float = 0.5,
         max_trials: int = 20,
-) -> float:
+) -> tuple[float, int]:
     """
-    Подбор шага по правилу Армихо (backtracking).
-
-    Ищем наименьшее α из геометрической прогрессии {α0, α0*rho, α0*rho^2, ...},
-    удовлетворяющее условию достаточного убывания:
-        f(x + α p) ≤ f(x) + c * α * ⟨∇f(x), p⟩,
-    где p — направление спуска (обычно p = -∇f(x)), 0 < c < 1, 0 < rho < 1.
-
-    Параметры
-    ---------
-    f, g : callable
-        Целевая функция и ее градиент.
-    x : np.ndarray
-        Текущая точка.
-    p : np.ndarray
-        Направление (обычно -grad).
-    alpha0 : float, optional
-        Стартовый шаг (по умолчанию 1.0).
-    c : float, optional
-        Константа Армихо (по умолчанию 1e-4).
-    rho : float, optional
-        Множитель уменьшения шага (по умолчанию 0.5).
-    max_trials : int, optional
-        Максимальное число уменьшений шага.
-
-    Возвращает
-    ----------
-    float
-        Найденный шаг α (возможно сильно уменьшенный).
-
-    Замечания
-    ---------
-    - При слишком узкой долине алгоритм может выполнять несколько уменьшений,
-      это нормально.
-    - Если условие не выполнено за max_trials попыток, возвращаем текущее α,
-      чтобы не зациклиться (хотя оно может быть "неидеальным").
+    Подбор шага α по Армихо:
+        f(x + α p) ≤ f(x) + c α ⟨∇f(x), p⟩.
+    Возвращает (alpha, reductions), где reductions — сколько раз уменьшали шаг.
     """
     fx = f(x)
     gx = g(x)
     dot = float(np.dot(gx, p))
     alpha = alpha0
+    reductions = 0
     for _ in range(max_trials):
         if f(x + alpha * p) <= fx + c * alpha * dot:
-            return alpha
+            return alpha, reductions
         alpha *= rho
-    return alpha
+        reductions += 1
+    return alpha, reductions
 
 
 # =========================
-#  КЛАСС ГРАДИЕНТНОГО СПУСКА
+#  Вспомогательное: автовыбор x0
+# =========================
+
+def autoselect_x0(
+        f: Callable[[NDArray[np.floating]], float],
+        dim: int,
+        samples: int = 64,
+        radius: float = 5.0,
+        seed: int = 42
+) -> NDArray[np.floating]:
+    """
+    Выбирает стартовую точку как argmin по набору кандидатов:
+      - 0-вектор, ±базисные, + случайные точки в [-radius, radius]^n.
+    """
+    rng = np.random.default_rng(seed)
+    candidates: List[NDArray[np.floating]] = [np.zeros(dim, dtype=float)]
+    for i in range(dim):
+        e = np.zeros(dim);
+        e[i] = 1.0
+        candidates += [e.copy(), -e.copy()]
+    for _ in range(max(0, samples - len(candidates))):
+        candidates.append(rng.uniform(-radius, radius, size=dim))
+
+    best_x = None;
+    best_f = np.inf
+    for x in candidates:
+        try:
+            fx = float(f(x))
+            if np.isfinite(fx) and fx < best_f:
+                best_f, best_x = fx, x
+        except Exception:
+            continue
+    return np.zeros(dim, dtype=float) if best_x is None else np.asarray(best_x, dtype=float)
+
+
+# =========================
+#  ГРАДИЕНТНЫЙ СПУСК
 # =========================
 
 @dataclass(slots=True)
 class GradientDescent:
-    """
-    Классическая схема градиентного спуска с опциональным backtracking line search.
-
-    Аргументы конструктора
-    ----------------------
-    f : callable
-        Целевая функция f(x) -> float.
-    g : callable
-        Градиент ∇f(x) -> np.ndarray.
-    step : float, optional
-        Стартовый шаг для линейного поиска (или фиксированный шаг, если use_backtracking=False).
-        По умолчанию 1.0.
-    tol_grad : float, optional
-        Порог по норме градиента (||∇f||_2 < tol_grad) — критерий остановки.
-        По умолчанию 1e-8.
-    tol_step : float, optional
-        Порог по длине шага (||x_{k+1} - x_k||_2 < tol_step) — дополнительный стоп.
-        По умолчанию 1e-12.
-    max_iter : int, optional
-        Максимальное число итераций. По умолчанию 100_000.
-    use_backtracking : bool, optional
-        Включить/выключить backtracking. По умолчанию True.
-    log_every : int, optional
-        Периодичность лога (каждые N итераций). По умолчанию 500.
-
-    Методы
-    ------
-    run(x0) -> (x_star, f_star, iters, history)
-        Запускает оптимизацию из точки x0. Возвращает найденную точку,
-        значение функции, число итераций и историю f по итерациям.
-
-    Пример
-    ------
-    >>> gd = GradientDescent(rosenbrock, rosenbrock_grad, step=1.0, use_backtracking=True)
-    >>> x_star, f_star, iters, hist = gd.run((0.0, 0.0))
-    >>> x_star
-    array([1.000..., 1.000...])
-    """
     f: Callable[[NDArray[np.floating]], float]
-    g: Callable[[NDArray[np.floating]], NDArray[np.floating]]
+    g: Optional[Callable[[NDArray[np.floating]], NDArray[np.floating]]] = None
     step: float = 1.0
     tol_grad: float = 1e-8
     tol_step: float = 1e-12
+    tol_f: float = 1e-12  # стабилизация функции
+    patience_f: int = 500
     max_iter: int = 100_000
     use_backtracking: bool = True
-    log_every: int = 500
+    grad_policy: str = "auto"
+    fd_eps: float = 1e-8
+    log_every: int = 200
 
-    def run(self, x0: Tuple[float, float]) -> Tuple[NDArray[np.floating], float, int, List[float]]:
+    # служебные поля последней итерации (для отчета)
+    _last_alpha: float = 0.0
+    _last_bt_reductions: int = 0
+    _last_grad_norm: float = 0.0
+    _stop_reason: str = "max_iter"
+
+    def _grad(self) -> Callable[[NDArray[np.floating]], NDArray[np.floating]]:
+        return self.g if self.g is not None else make_gradient(self.f, prefer=self.grad_policy, eps=self.fd_eps)
+
+    def run(self, x0: NDArray[np.floating] | Tuple[float, ...]) -> Tuple[
+        NDArray[np.floating], float, int, List[float], dict]:
         """
-        Запуск градиентного спуска.
-
-        Параметры
-        ---------
-        x0 : tuple[float, float]
-            Начальная точка (x, y).
-
-        Возвращает
-        ----------
-        (x_star, f_star, iters, history)
-            x_star : np.ndarray shape (2,)
-                Найденная точка (приближение к минимуму).
-            f_star : float
-                Значение f в найденной точке.
-            iters : int
-                Количество выполненных итераций.
-            history : list[float]
-                История значений f по итерациям (для анализа сходимости).
-
-        Исключения
-        ----------
-        FloatingPointError
-            Если f или ∇f вернули нечисловые/бесконечные значения (признак расходимости).
-
-        Замечания
-        ---------
-        - Если use_backtracking=True, шаг подбирается по правилу Армихо.
-        - Если False — используется фиксированный шаг `step`.
-        - Алгоритм останавливается по ||∇f||_2, длине шага и/или max_iter.
+        Возвращает: (x_star, f_star, iters, history, meta)
+        meta = {
+          'stop_reason', 'grad_norm', 'alpha', 'bt_reductions'
+        }
         """
         x = np.asarray(x0, dtype=float)
+        gfun = self._grad()
         history: List[float] = []
+        df_window: deque[float] = deque(maxlen=max(1, self.patience_f))
+
+        self._stop_reason = "max_iter"
+        self._last_alpha = 0.0
+        self._last_bt_reductions = 0
+        self._last_grad_norm = 0.0
 
         for k in range(1, self.max_iter + 1):
-            gk = self.g(x)
+            gk = gfun(x)
             ng = float(np.linalg.norm(gk))
             fk = self.f(x)
             history.append(fk)
@@ -275,55 +235,403 @@ class GradientDescent:
             if not isfinite(fk) or not np.isfinite(gk).all():
                 raise FloatingPointError("f/grad not finite; diverged.")
 
+            # критерий 1: по норме градиента
             if ng < self.tol_grad:
+                self._stop_reason = "grad_tol"
+                self._last_grad_norm = ng
                 break
 
-            p = -gk  # направление спуска
-            alpha = (
-                backtracking_armijo(self.f, self.g, x, p, alpha0=self.step)
-                if self.use_backtracking else self.step
-            )
+            # критерий 2: стабилизация f
+            if len(history) >= 2:
+                df = abs(history[-1] - history[-2])
+                df_window.append(df)
+                if len(df_window) == df_window.maxlen and all(d <= self.tol_f for d in df_window):
+                    self._stop_reason = "f_stabilized"
+                    self._last_grad_norm = ng
+                    break
+
+            p = -gk
+            if self.use_backtracking:
+                alpha, red = backtracking_armijo(self.f, gfun, x, p, alpha0=self.step)
+            else:
+                alpha, red = self.step, 0
+
             x_new = x + alpha * p
 
+            # критерий 3: по длине шага
             if np.linalg.norm(x_new - x) < self.tol_step:
                 x = x_new
+                self._stop_reason = "step_tol"
+                self._last_alpha = alpha
+                self._last_bt_reductions = red
+                self._last_grad_norm = ng
                 break
+
+            # записываем «последнее известное»
+            self._last_alpha = alpha
+            self._last_bt_reductions = red
+            self._last_grad_norm = ng
 
             x = x_new
 
             if self.log_every and (k % self.log_every == 0):
-                print(f"[{k}] f={fk:.6e}, ||g||={ng:.3e}, alpha={alpha:.2e}, x={x}")
+                print(f"[{k}] f={fk:.6e}, ||g||={ng:.3e}, alpha={alpha:.2e}, bt_reductions={red}, x={x}")
 
-        return x, float(self.f(x)), k, history
+        meta = {
+            "stop_reason": self._stop_reason,
+            "grad_norm": self._last_grad_norm,
+            "alpha": self._last_alpha,
+            "bt_reductions": self._last_bt_reductions,
+        }
+        return x, float(self.f(x)), k, history, meta
 
 
 # =========================
-#  ДЕМО: запуск из командной строки
+#  РЕЕСТР ФУНКЦИЙ
 # =========================
+
+@dataclass(frozen=True)
+class FuncSpec:
+    name: str
+    func: Callable[[NDArray[np.floating]], float]
+    dim: Optional[int]  # None => любой n
+    description: str
+    minima_note: Optional[str] = None  # человекочитаемая подсказка про минимум(ы)
+
+
+def rosenbrock_nd(x: NDArray[np.floating]) -> float:
+    x = np.asarray(x, dtype=float)
+    return np.sum(100.0 * (x[1:] - x[:-1] ** 2) ** 2 + (1.0 - x[:-1]) ** 2)
+
+
+def rosenbrock_2d(x: NDArray[np.floating]) -> float:
+    x1, x2 = float(x[0]), float(x[1])
+    return (1.0 - x1) ** 2 + 100.0 * (x2 - x1 ** 2) ** 2
+
+
+def quadratic2d(x: NDArray[np.floating]) -> float:
+    x1, x2 = float(x[0]), float(x[1])
+    return (x1 - 2.0) ** 2 + (x2 + 1.0) ** 2
+
+
+def rastrigin(x: NDArray[np.floating]) -> float:
+    x = np.asarray(x, dtype=float)
+    n = x.size
+    return 10.0 * n + np.sum(x ** 2 - 10.0 * np.cos(2 * np.pi * x))
+
+
+def himmelblau(x: NDArray[np.floating]) -> float:
+    a = x[0] ** 2 + x[1] - 11.0
+    b = x[0] + x[1] ** 2 - 7.0
+    return float(a * a + b * b)
+
+
+def beale(x: NDArray[np.floating]) -> float:
+    x1, x2 = float(x[0]), float(x[1])
+    return (1.5 - x1 + x1 * x2) ** 2 + (2.25 - x1 + x1 * x2 ** 2) ** 2 + (2.625 - x1 + x1 * x2 ** 3) ** 2
+
+
+def polyquartic2d(x: NDArray[np.floating]) -> float:
+    # f(x,y) = 2x^2 - 4xy + y^4 + 2
+    x1, x2 = float(x[0]), float(x[1])
+    return 2.0 * x1 ** 2 - 4.0 * x1 * x2 + x2 ** 4 + 2.0
+
+
+FUNC_REGISTRY: Dict[str, FuncSpec] = {
+    "rosenbrock": FuncSpec("rosenbrock", rosenbrock_2d, 2, "Rosenbrock 2D: (1-x)^2 + 100(y-x^2)^2",
+                           "Глобальный минимум в (1, 1)."),
+    "rosenbrock_nd": FuncSpec("rosenbrock_nd", rosenbrock_nd, None,
+                              "Rosenbrock nD: sum 100(x_{i+1}-x_i^2)^2 + (1-x_i)^2", "Глобальный минимум в (1,…,1)."),
+    "quadratic2d": FuncSpec("quadratic2d", quadratic2d, 2, "Quadratic 2D: (x-2)^2 + (y+1)^2",
+                            "Глобальный минимум в (2, -1)."),
+    "rastrigin": FuncSpec("rastrigin", rastrigin, None, "Rastrigin nD: 10n + sum(x^2 - 10 cos 2πx)",
+                          "Много локальных минимумов, глобальный в (0,…,0)."),
+    "himmelblau": FuncSpec("himmelblau", himmelblau, 2, "Himmelblau 2D",
+                           "Четыре глобальных минимума, в т.ч. (3,2), (-2.805, 3.131), (-3.779, -3.283), (3.584, -1.848)."),
+    "beale": FuncSpec("beale", beale, 2, "Beale 2D", "Глобальный минимум в (3, 0.5)."),
+    "polyquartic2d": FuncSpec("polyquartic2d", polyquartic2d, 2, "2x^2 - 4xy + y^4 + 2",
+                              "Два глобальных минимума: (1,1) и (-1,-1)."),
+}
+
+
+def list_functions() -> str:
+    lines = []
+    for k, spec in FUNC_REGISTRY.items():
+        dim = "any" if spec.dim is None else str(spec.dim)
+        lines.append(f"- {k:13s} | dim={dim} | {spec.description}")
+    return "\n".join(lines)
+
+
+# =========================
+#  SAFE eval для пользовательской функции
+# =========================
+
+_ALLOWED_GLOBALS = {
+    "np": np,
+    "sin": np.sin, "cos": np.cos, "tan": np.tan,
+    "exp": np.exp, "log": np.log, "sqrt": np.sqrt,
+    "abs": np.abs, "pi": np.pi, "e": np.e,
+}
+
+
+def build_custom_function(expr: str, dim: int) -> Callable[[NDArray[np.floating]], float]:
+    """
+    Создает f(x)->float из текстового выражения.
+    Поддерживает стиль с x[i] и x0,x1,… (y≡x1, z≡x2).
+    """
+    expr = expr.strip()
+
+    def f(x: NDArray[np.floating]) -> float:
+        x = np.asarray(x, dtype=float)
+        if x.size != dim:
+            raise ValueError(f"custom f expects dim={dim}, got {x.size}")
+        locals_map = {"x": x}
+        for i in range(dim):
+            locals_map[f"x{i}"] = x[i]
+        if dim >= 2: locals_map["y"] = x[1]
+        if dim >= 3: locals_map["z"] = x[2]
+        val = eval(expr, {"__builtins__": None, **_ALLOWED_GLOBALS}, locals_map)  # noqa: S307 (осознанно)
+        return float(val)
+
+    return f
+
+
+# =========================
+#  CLI + интерактив
+# =========================
+
+def parse_args(argv: Optional[List[str]] = None) -> argparse.Namespace:
+    p = argparse.ArgumentParser(description="Universal GD with Armijo. Registry, custom input, early stop, auto x0.")
+    p.add_argument("--func", help="Function key from registry (see --list). If omitted, interactive mode starts.")
+    p.add_argument("--list", action="store_true", help="List available functions and exit.")
+    p.add_argument("--x0", help="Initial point as comma-separated floats, e.g. '0,0' or '0,0,0'.")
+    p.add_argument("--auto-x0", action="store_true", help="Automatically choose a good starting point.")
+    p.add_argument("--auto-x0-samples", type=int, default=64, help="Number of random candidates for auto-x0.")
+    p.add_argument("--auto-x0-radius", type=float, default=5.0, help="Radius of sampling cube for auto-x0.")
+    p.add_argument("--auto-x0-seed", type=int, default=42, help="Random seed for auto-x0.")
+    p.add_argument("--step", type=float, default=1.0, help="Initial step.")
+    p.add_argument("--no-backtracking", action="store_true", help="Disable Armijo backtracking (use fixed step).")
+    p.add_argument("--grad-policy", choices=["auto", "jax", "finite"], default="auto", help="How to build gradient.")
+    p.add_argument("--fd-eps", type=float, default=1e-8, help="Finite-diff base step (central difference).")
+    p.add_argument("--tol-grad", type=float, default=1e-10, help="Stop when ||grad|| < tol_grad.")
+    p.add_argument("--tol-step", type=float, default=1e-14, help="Stop when ||Δx|| < tol_step.")
+    p.add_argument("--tol-f", type=float, default=1e-12, help="Early stop if |Δf| < tol_f over patience_f iters.")
+    p.add_argument("--patience-f", type=int, default=500, help="Window (iters) for f-stabilization.")
+    p.add_argument("--max-iters", type=int, default=100000, help="Max iterations.")
+    p.add_argument("--log-every", type=int, default=500, help="Log every N iterations (0 to disable).")
+    p.add_argument("--compare-scipy", action="store_true", help="Also run scipy.optimize.minimize for comparison.")
+    p.add_argument("--interactive", action="store_true", help="Force interactive mode.")
+    return p.parse_args(argv)
+
+
+def _explain_and_print(label: str, x_star: np.ndarray, f_star: float, iters: int, meta: dict,
+                       spec: Optional[FuncSpec]) -> None:
+    """
+    Красивый человекочитаемый отчет.
+    """
+    reason_map = {
+        "grad_tol": "достигнут порог по норме градиента (||∇f|| < tol_grad)",
+        "step_tol": "шаг стал слишком мал (||Δx|| < tol_step)",
+        "f_stabilized": "значение функции стабилизировалось (|Δf| ≤ tol_f в окне)",
+        "max_iter": "достигнут лимит итераций (max_iter)",
+    }
+    print("\n— РЕЗУЛЬТАТ —")
+    print(f"  Функция:           {label}")
+    if spec and spec.minima_note:
+        print(f"  Подсказка по минимуму: {spec.minima_note}")
+    print(f"  Найденная точка x*: {x_star}")
+    print(f"  Значение f(x*):     {f_star:.12e}")
+    print(f"  Итераций:           {iters}")
+    print(f"  Причина остановки:  {meta.get('stop_reason')} — {reason_map.get(meta.get('stop_reason', ''), '')}")
+    print(f"  ||∇f(x*)||:         {meta.get('grad_norm'):.3e}")
+    print(f"  Последний шаг α:    {meta.get('alpha'):.3e}")
+    print(f"  Backtracking редукций на последнем шаге: {meta.get('bt_reductions')}")
+    print("  Пояснение полей:")
+    print("    • x* — найденная точка минимума/стационарная точка.")
+    print("    • f(x*) — значение функции в найденной точке.")
+    print("    • ||∇f|| — насколько «круто» меняется f (ноль на точном минимуме).")
+    print("    • α — фактическая длина шага на последней итерации (после бэктрекинга).")
+    print("    • backtracking редукций — сколько раз уменьшали шаг, чтобы выполнить условие Армихо.\n")
+
+
+def run_gd(
+        f: Callable[[NDArray[np.floating]], float],
+        x0: NDArray[np.floating],
+        args: argparse.Namespace,
+        label: str,
+        spec: Optional[FuncSpec] = None
+) -> None:
+    gd = GradientDescent(
+        f=f,
+        g=None,
+        step=args.step,
+        tol_grad=args.tol_grad,
+        tol_step=args.tol_step,
+        tol_f=args.tol_f,
+        patience_f=args.patience_f,
+        max_iter=args.max_iters,
+        use_backtracking=(not args.no_backtracking),
+        grad_policy=args.grad_policy,
+        fd_eps=args.fd_eps,
+        log_every=args.log_every,
+    )
+    x_star, f_star, iters, _hist, meta = gd.run(x0)
+    print(f"[GD] {label} -> x={x_star}, f={f_star:.12e}, iters={iters}, stop={meta['stop_reason']}, "
+          f"||g||={meta['grad_norm']:.3e}, alpha={meta['alpha']:.2e}, bt_red={meta['bt_reductions']}")
+    _explain_and_print(label, x_star, f_star, iters, meta, spec)
+
+    if args.compare_scipy:
+        if not _HAS_SCIPY:
+            print("[WARN] SciPy is not installed; skipping comparison.")
+        else:
+            res = minimize(fun=f, x0=np.array(x0, dtype=float))
+            print(f"[SciPy] {label} -> x={res.x}, f={res.fun:.12e}, iters={getattr(res, 'nit', None)}\n")
+
+
+def interactive_flow(args: argparse.Namespace) -> int:
+    print("=== Universal Gradient Descent (interactive) ===")
+    print("Выбери режим:")
+    print("  1) Функция из реестра")
+    print("  2) Ввести свою функцию вручную")
+    choice = input("Твой выбор [1/2]: ").strip() or "1"
+
+    if choice == "1":
+        print("\nДоступные функции:\n" + list_functions())
+        key = input("Введи ключ функции (например, rosenbrock): ").strip()
+        if key not in FUNC_REGISTRY:
+            print(f"[ERROR] Неизвестная функция '{key}'.")
+            return 2
+        spec = FUNC_REGISTRY[key]
+
+        if spec.dim is None:
+            x0_str = input("Введи начальную точку x0 (например '0,0,0'): ").strip()
+            dim = len(x0_str.split(",")) if x0_str else 0
+        else:
+            dim = spec.dim
+            use_auto = input(f"Автовыбрать x0 размерности {dim}? [y/N]: ").strip().lower() == "y"
+            if use_auto:
+                x0 = autoselect_x0(spec.func, dim, samples=args.auto_x0_samples, radius=args.auto_x0_radius,
+                                   seed=args.auto_x0_seed)
+                print(f"[auto-x0] выбран старт: x0={x0}")
+                run_gd(spec.func, x0, args, label=spec.name, spec=spec)
+                return 0
+            x0_str = input(f"Введи x0 размерности {dim} (например '0,0'): ").strip()
+
+        x0 = np.array([float(s) for s in x0_str.split(",")], dtype=float)
+        if (spec.dim is not None) and (x0.size != spec.dim):
+            print(f"[ERROR] Ожидалась размерность {spec.dim}, а получено {x0.size}.")
+            return 2
+
+        run_gd(spec.func, x0, args, label=spec.name, spec=spec)
+        return 0
+
+    elif choice == "2":
+        dim = int(input("Введи размерность / количество переменных функции (целое > 0): ").strip())
+        expr = input(
+            "Введи выражение для f(x):\n"
+            "  · можно использовать x, x[i] (векторный стиль), np.*, sin, cos, exp, log, sqrt, abs, pi, e\n"
+            "  · или имена x0,x1,... (доступны также y≡x1, z≡x2)\n"
+            "Пример 2D:  2*x0**2 - 4*x0*x1 + x1**4 + 2\n"
+            "Твоя f(x) = "
+        )
+        f = build_custom_function(expr, dim)
+
+        use_auto = input(f"Автовыбрать x0 размерности {dim}? [y/N]: ").strip().lower() == "y"
+        if use_auto:
+            x0 = autoselect_x0(f, dim, samples=args.auto_x0_samples, radius=args.auto_x0_radius, seed=args.auto_x0_seed)
+            print(f"[auto-x0] выбран старт: x0={x0}")
+            run_gd(f, x0, args, label="custom", spec=None)
+            return 0
+
+        x0_str = input(f"Введи начальную точку x0 через запятую из {dim} чисел (например '0,0'): ").strip()
+        x0 = np.array([float(s) for s in x0_str.split(",")], dtype=float)
+        if x0.size != dim:
+            print(f"[ERROR] Ожидалась размерность {dim}, а получено {x0.size}.")
+            return 2
+
+        run_gd(f, x0, args, label="custom", spec=None)
+        return 0
+
+    else:
+        print("[ERROR] Неверный выбор.")
+        return 2
+
+
+def parse_args_top(argv: Optional[List[str]] = None) -> argparse.Namespace:
+    p = argparse.ArgumentParser(description="Universal GD with Armijo. Registry, custom input, early stop, auto x0.")
+    p.add_argument("--func", help="Function key from registry (see --list). If omitted, interactive mode starts.")
+    p.add_argument("--list", action="store_true", help="List available functions and exit.")
+    p.add_argument("--x0", help="Initial point as comma-separated floats, e.g. '0,0' or '0,0,0'.")
+    p.add_argument("--auto-x0", action="store_true", help="Automatically choose a good starting point.")
+    p.add_argument("--auto-x0-samples", type=int, default=64)
+    p.add_argument("--auto-x0-radius", type=float, default=5.0)
+    p.add_argument("--auto-x0-seed", type=int, default=42)
+    p.add_argument("--step", type=float, default=1.0)
+    p.add_argument("--no-backtracking", action="store_true")
+    p.add_argument("--grad-policy", choices=["auto", "jax", "finite"], default="auto")
+    p.add_argument("--fd-eps", type=float, default=1e-8)
+    p.add_argument("--tol-grad", type=float, default=1e-10)
+    p.add_argument("--tol-step", type=float, default=1e-14)
+    p.add_argument("--tol-f", type=float, default=1e-12)
+    p.add_argument("--patience-f", type=int, default=500)
+    p.add_argument("--max-iters", type=int, default=100000)
+    p.add_argument("--log-every", type=int, default=500)
+    p.add_argument("--compare-scipy", action="store_true")
+    p.add_argument("--interactive", action="store_true")
+    return p.parse_args(argv)
+
+
+def main(argv: Optional[List[str]] = None) -> int:
+    args = parse_args_top(argv)
+
+    if args.list:
+        print("Available functions:\n" + list_functions())
+        return 0
+
+    if args.interactive or (args.func is None):
+        return interactive_flow(args)
+
+    key = args.func
+    if key not in FUNC_REGISTRY:
+        print(f"[ERROR] Unknown --func '{key}'. Use --list to see available.", file=sys.stderr)
+        return 2
+
+    spec = FUNC_REGISTRY[key]
+    dim = spec.dim if spec.dim is not None else None
+
+    # авто x0 при необходимости
+    if args.auto_x0:
+        if dim is None:
+            if args.x0 is None:
+                print("[ERROR] For dim=any functions with --auto-x0, please supply --x0 to define dimension.",
+                      file=sys.stderr)
+                return 2
+            dim = len(args.x0.split(","))
+        x0 = autoselect_x0(spec.func, dim, samples=args.auto_x0_samples, radius=args.auto_x0_radius,
+                           seed=args.auto_x0_seed)
+    else:
+        if args.x0 is None:
+            print("[ERROR] --x0 is required in non-interactive mode (or use --auto-x0).", file=sys.stderr)
+            return 2
+        try:
+            x0 = np.array([float(s) for s in args.x0.split(",")], dtype=float)
+        except Exception:
+            print("[ERROR] --x0 must be comma-separated floats.", file=sys.stderr)
+            return 2
+
+    if (spec.dim is not None) and (x0.size != spec.dim):
+        print(f"[ERROR] Function '{key}' expects dim={spec.dim}, but x0 has dim={x0.size}.", file=sys.stderr)
+        return 2
+    if (spec.dim is None) and (x0.size < 1):
+        print(f"[ERROR] Function '{key}' expects dim>=1.", file=sys.stderr)
+        return 2
+    if key == "rosenbrock_nd" and x0.size < 2:
+        print("[ERROR] rosenbrock_nd requires n>=2.", file=sys.stderr)
+        return 2
+
+    run_gd(spec.func, x0, args, label=spec.name, spec=spec)
+    return 0
+
 
 if __name__ == "__main__":
-    # Стартовая точка как в твоих примерах
-    x0 = (0.0, 0.0)
-
-    # 1) Наш градиентный спуск с бэктрек-линейным поиском
-    gd = GradientDescent(
-        f=rosenbrock,
-        g=rosenbrock_grad,
-        step=1.0,  # старт для backtracking
-        use_backtracking=True,  # включаем линийный поиск
-        tol_grad=1e-10,
-        tol_step=1e-14,
-        log_every=500
-    )
-    x_star, f_star, iters, hist = gd.run(x0)
-    print(f"GD result:  x={x_star}, f={f_star:.6e}, iters={iters}")
-
-    # 2) SciPy minimize (BFGS) с аналитическим градиентом — для сравнения
-    res = minimize(
-        fun=rosenbrock,
-        x0=np.array(x0, dtype=float),
-        jac=rosenbrock_grad,
-        method="BFGS",
-        options={"gtol": 1e-10}
-    )
-    print(f"BFGS result: x={res.x}, f={res.fun:.6e}, iters={res.nit}")
+    raise SystemExit(main())
