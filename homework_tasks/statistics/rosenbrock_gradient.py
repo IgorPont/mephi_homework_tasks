@@ -1,6 +1,6 @@
 """
 УНИВЕРСАЛЬНЫЙ градиентный спуск с бэктрек-линейным поиском (Armijo) + CLI + реестр + ИНТЕРАКТИВ
-+ ранняя остановка по стабилизации f + автовыбор стартовой точки.
++ ранняя остановка по стабилизации f + автовыбор стартовой точки + отчёт + 2D-визуализация (по запросу).
 
 Фишки
 -----
@@ -73,8 +73,14 @@ def _central_diff_grad(
             h = eps * max(1.0, abs(x[i]))
             ei = np.zeros(n, dtype=float)
             ei[i] = 1.0
-            fp = f(x + h * ei)
-            fm = f(x - h * ei)
+            try:
+                fp = f(x + h * ei)
+            except Exception:
+                fp = np.inf
+            try:
+                fm = f(x - h * ei)
+            except Exception:
+                fm = np.inf
             grad[i] = (fp - fm) / (2.0 * h)
         return grad
 
@@ -113,7 +119,7 @@ def make_gradient(
 
 
 # =========================
-#  ЛИНЕЙНЫЙ ПОИСК (ARMIJO)
+#  ЛИНЕЙНЫЙ ПОИСК (ARMIJO) — устойчивый
 # =========================
 
 def backtracking_armijo(
@@ -130,15 +136,31 @@ def backtracking_armijo(
     Подбор шага α по Армихо:
         f(x + α p) ≤ f(x) + c α ⟨∇f(x), p⟩.
     Возвращает (alpha, reductions), где reductions — сколько раз уменьшали шаг.
+    Устойчив к NaN/Inf/исключениям в f(x+αp) и переполнениям в скалярном произведении.
     """
-    fx = f(x)
+    try:
+        fx = f(x)
+    except Exception:
+        fx = np.inf
     gx = g(x)
-    dot = float(np.dot(gx, p))
+    with np.errstate(over='ignore', invalid='ignore'):
+        dot = float(np.dot(gx, p))
+    if not np.isfinite(dot):
+        dot = 0.0
+
     alpha = alpha0
     reductions = 0
     for _ in range(max_trials):
-        if f(x + alpha * p) <= fx + c * alpha * dot:
+        try:
+            with np.errstate(over='ignore', invalid='ignore'):
+                f_trial = f(x + alpha * p)
+        except Exception:
+            f_trial = np.inf
+
+        rhs = fx + c * alpha * dot
+        if np.isfinite(f_trial) and f_trial <= rhs:
             return alpha, reductions
+
         alpha *= rho
         reductions += 1
     return alpha, reductions
@@ -168,7 +190,7 @@ def autoselect_x0(
     for _ in range(max(0, samples - len(candidates))):
         candidates.append(rng.uniform(-radius, radius, size=dim))
 
-    best_x = None;
+    best_x = None
     best_f = np.inf
     for x in candidates:
         try:
@@ -209,17 +231,17 @@ class GradientDescent:
         return self.g if self.g is not None else make_gradient(self.f, prefer=self.grad_policy, eps=self.fd_eps)
 
     def run(self, x0: NDArray[np.floating] | Tuple[float, ...]) -> Tuple[
-        NDArray[np.floating], float, int, List[float], dict]:
+        NDArray[np.floating], float, int, List[float], dict, NDArray[np.floating]]:
         """
-        Возвращает: (x_star, f_star, iters, history, meta)
-        meta = {
-          'stop_reason', 'grad_norm', 'alpha', 'bt_reductions'
-        }
+        Возвращает: (x_star, f_star, iters, history_f, meta, trajectory)
+        meta = { 'stop_reason', 'grad_norm', 'alpha', 'bt_reductions' }
+        trajectory: массив shape (m, n) — точки траектории по итерациям (для визуализации).
         """
         x = np.asarray(x0, dtype=float)
         gfun = self._grad()
-        history: List[float] = []
+        history_f: List[float] = []
         df_window: deque[float] = deque(maxlen=max(1, self.patience_f))
+        traj: List[NDArray[np.floating]] = [x.copy()]
 
         self._stop_reason = "max_iter"
         self._last_alpha = 0.0
@@ -230,7 +252,7 @@ class GradientDescent:
             gk = gfun(x)
             ng = float(np.linalg.norm(gk))
             fk = self.f(x)
-            history.append(fk)
+            history_f.append(fk)
 
             if not isfinite(fk) or not np.isfinite(gk).all():
                 raise FloatingPointError("f/grad not finite; diverged.")
@@ -242,8 +264,8 @@ class GradientDescent:
                 break
 
             # критерий 2: стабилизация f
-            if len(history) >= 2:
-                df = abs(history[-1] - history[-2])
+            if len(history_f) >= 2:
+                df = abs(history_f[-1] - history_f[-2])
                 df_window.append(df)
                 if len(df_window) == df_window.maxlen and all(d <= self.tol_f for d in df_window):
                     self._stop_reason = "f_stabilized"
@@ -261,6 +283,7 @@ class GradientDescent:
             # критерий 3: по длине шага
             if np.linalg.norm(x_new - x) < self.tol_step:
                 x = x_new
+                traj.append(x.copy())
                 self._stop_reason = "step_tol"
                 self._last_alpha = alpha
                 self._last_bt_reductions = red
@@ -273,6 +296,7 @@ class GradientDescent:
             self._last_grad_norm = ng
 
             x = x_new
+            traj.append(x.copy())
 
             if self.log_every and (k % self.log_every == 0):
                 print(f"[{k}] f={fk:.6e}, ||g||={ng:.3e}, alpha={alpha:.2e}, bt_reductions={red}, x={x}")
@@ -283,7 +307,7 @@ class GradientDescent:
             "alpha": self._last_alpha,
             "bt_reductions": self._last_bt_reductions,
         }
-        return x, float(self.f(x)), k, history, meta
+        return x, float(self.f(x)), k, history_f, meta, np.asarray(traj)
 
 
 # =========================
@@ -296,7 +320,7 @@ class FuncSpec:
     func: Callable[[NDArray[np.floating]], float]
     dim: Optional[int]  # None => любой n
     description: str
-    minima_note: Optional[str] = None  # человекочитаемая подсказка про минимум(ы)
+    minima_note: Optional[str] = None  # подсказка про минимум(ы)
 
 
 def rosenbrock_nd(x: NDArray[np.floating]) -> float:
@@ -332,7 +356,6 @@ def beale(x: NDArray[np.floating]) -> float:
 
 
 def polyquartic2d(x: NDArray[np.floating]) -> float:
-    # f(x,y) = 2x^2 - 4xy + y^4 + 2
     x1, x2 = float(x[0]), float(x[1])
     return 2.0 * x1 ** 2 - 4.0 * x1 * x2 + x2 ** 4 + 2.0
 
@@ -347,7 +370,7 @@ FUNC_REGISTRY: Dict[str, FuncSpec] = {
     "rastrigin": FuncSpec("rastrigin", rastrigin, None, "Rastrigin nD: 10n + sum(x^2 - 10 cos 2πx)",
                           "Много локальных минимумов, глобальный в (0,…,0)."),
     "himmelblau": FuncSpec("himmelblau", himmelblau, 2, "Himmelblau 2D",
-                           "Четыре глобальных минимума, в т.ч. (3,2), (-2.805, 3.131), (-3.779, -3.283), (3.584, -1.848)."),
+                           "Четыре глобальных минимума: (3,2), (-2.805, 3.131), (-3.779, -3.283), (3.584, -1.848)."),
     "beale": FuncSpec("beale", beale, 2, "Beale 2D", "Глобальный минимум в (3, 0.5)."),
     "polyquartic2d": FuncSpec("polyquartic2d", polyquartic2d, 2, "2x^2 - 4xy + y^4 + 2",
                               "Два глобальных минимума: (1,1) и (-1,-1)."),
@@ -363,7 +386,7 @@ def list_functions() -> str:
 
 
 # =========================
-#  SAFE eval для пользовательской функции
+#  SAFE eval для пользовательской функции (Py3.13 friendly)
 # =========================
 
 _ALLOWED_GLOBALS = {
@@ -381,19 +404,87 @@ def build_custom_function(expr: str, dim: int) -> Callable[[NDArray[np.floating]
     """
     expr = expr.strip()
 
+    # Заглушка для __import__: защищает от любых попыток импорта внутри eval
+    def _no_import(*args, **kwargs):
+        raise ImportError("Import is disabled in this sandboxed eval")
+
     def f(x: NDArray[np.floating]) -> float:
         x = np.asarray(x, dtype=float)
         if x.size != dim:
             raise ValueError(f"custom f expects dim={dim}, got {x.size}")
+
         locals_map = {"x": x}
         for i in range(dim):
             locals_map[f"x{i}"] = x[i]
-        if dim >= 2: locals_map["y"] = x[1]
-        if dim >= 3: locals_map["z"] = x[2]
-        val = eval(expr, {"__builtins__": None, **_ALLOWED_GLOBALS}, locals_map)  # noqa: S307 (осознанно)
+        if dim >= 2:
+            locals_map["y"] = x[1]
+        if dim >= 3:
+            locals_map["z"] = x[2]
+
+        # Py3.13-safe: подсовываем __import__ как вызываемую заглушку
+        safe_globals = {"__builtins__": {"__import__": _no_import}, **_ALLOWED_GLOBALS}
+
+        val = eval(expr, safe_globals, locals_map)  # noqa: S307 (осознанно, sandbox-глобалы)
         return float(val)
 
     return f
+
+
+# =========================
+#  Визуализация 2D (по запросу)
+# =========================
+
+def visualize_2d_contours_and_path(
+        f: Callable[[NDArray[np.floating]], float],
+        traj: NDArray[np.floating],
+        minima_hint: Optional[str] = None,
+        title: str = "Gradient Descent Trajectory (2D)"
+) -> None:
+    """
+    Рисует 2D-контуры f и поверх — траекторию GD. Требует matplotlib.
+    """
+    try:
+        import matplotlib.pyplot as plt
+    except Exception:
+        print("[WARN] matplotlib не установлен — визуализация пропущена.")
+        return
+
+    if traj.shape[1] != 2:
+        print("[WARN] Визуализация доступна только для 2D. Пропускаю.")
+        return
+
+    # разумные границы: по траектории + небольшой отступ
+    xmin, ymin = traj.min(axis=0) - 1.0
+    xmax, ymax = traj.max(axis=0) + 1.0
+    # если траектория маленькая, дайте дефолт
+    if not np.isfinite([xmin, xmax, ymin, ymax]).all() or (xmax - xmin < 1e-6) or (ymax - ymin < 1e-6):
+        xmin, xmax, ymin, ymax = -3, 3, -3, 3
+
+    xs = np.linspace(xmin, xmax, 400)
+    ys = np.linspace(ymin, ymax, 400)
+    X, Y = np.meshgrid(xs, ys)
+    Z = np.empty_like(X)
+    for i in range(X.shape[0]):
+        for j in range(X.shape[1]):
+            Z[i, j] = f(np.array([X[i, j], Y[i, j]], dtype=float))
+
+    fig = plt.figure(figsize=(8, 7))
+    ax = fig.add_subplot(111)
+    levels = np.linspace(np.nanmin(Z), np.nanpercentile(Z, 95), 25)
+    ax.contour(X, Y, Z, levels=levels)
+    ax.plot(traj[:, 0], traj[:, 1], marker='o', markersize=2, linewidth=1, label="trajectory")
+    ax.scatter([traj[0, 0]], [traj[0, 1]], s=60, marker='s', label="start")
+    ax.scatter([traj[-1, 0]], [traj[-1, 1]], s=60, marker='*', label="end")
+
+    if minima_hint:
+        ax.set_title(f"{title}\n{minima_hint}")
+    else:
+        ax.set_title(title)
+
+    ax.set_xlabel("x")
+    ax.set_ylabel("y")
+    ax.legend(loc="best")
+    plt.show()
 
 
 # =========================
@@ -475,7 +566,7 @@ def run_gd(
         fd_eps=args.fd_eps,
         log_every=args.log_every,
     )
-    x_star, f_star, iters, _hist, meta = gd.run(x0)
+    x_star, f_star, iters, hist_f, meta, traj = gd.run(x0)
     print(f"[GD] {label} -> x={x_star}, f={f_star:.12e}, iters={iters}, stop={meta['stop_reason']}, "
           f"||g||={meta['grad_norm']:.3e}, alpha={meta['alpha']:.2e}, bt_red={meta['bt_reductions']}")
     _explain_and_print(label, x_star, f_star, iters, meta, spec)
@@ -486,6 +577,14 @@ def run_gd(
         else:
             res = minimize(fun=f, x0=np.array(x0, dtype=float))
             print(f"[SciPy] {label} -> x={res.x}, f={res.fun:.12e}, iters={getattr(res, 'nit', None)}\n")
+
+    # интерактивное предложение визуализации для 2D
+    dim = x0.size
+    if dim == 2:
+        ans = input("Построить 2D визуализацию траектории? [y/N]: ").strip().lower()
+        if ans == "y":
+            minima_hint = spec.minima_note if spec else None
+            visualize_2d_contours_and_path(f, traj, minima_hint=minima_hint, title=f"{label} (2D)")
 
 
 def interactive_flow(args: argparse.Namespace) -> int:
@@ -558,27 +657,8 @@ def interactive_flow(args: argparse.Namespace) -> int:
 
 
 def parse_args_top(argv: Optional[List[str]] = None) -> argparse.Namespace:
-    p = argparse.ArgumentParser(description="Universal GD with Armijo. Registry, custom input, early stop, auto x0.")
-    p.add_argument("--func", help="Function key from registry (see --list). If omitted, interactive mode starts.")
-    p.add_argument("--list", action="store_true", help="List available functions and exit.")
-    p.add_argument("--x0", help="Initial point as comma-separated floats, e.g. '0,0' or '0,0,0'.")
-    p.add_argument("--auto-x0", action="store_true", help="Automatically choose a good starting point.")
-    p.add_argument("--auto-x0-samples", type=int, default=64)
-    p.add_argument("--auto-x0-radius", type=float, default=5.0)
-    p.add_argument("--auto-x0-seed", type=int, default=42)
-    p.add_argument("--step", type=float, default=1.0)
-    p.add_argument("--no-backtracking", action="store_true")
-    p.add_argument("--grad-policy", choices=["auto", "jax", "finite"], default="auto")
-    p.add_argument("--fd-eps", type=float, default=1e-8)
-    p.add_argument("--tol-grad", type=float, default=1e-10)
-    p.add_argument("--tol-step", type=float, default=1e-14)
-    p.add_argument("--tol-f", type=float, default=1e-12)
-    p.add_argument("--patience-f", type=int, default=500)
-    p.add_argument("--max-iters", type=int, default=100000)
-    p.add_argument("--log-every", type=int, default=500)
-    p.add_argument("--compare-scipy", action="store_true")
-    p.add_argument("--interactive", action="store_true")
-    return p.parse_args(argv)
+    # Оставлено для обратной совместимости с твоими call-сценариями
+    return parse_args(argv)
 
 
 def main(argv: Optional[List[str]] = None) -> int:
