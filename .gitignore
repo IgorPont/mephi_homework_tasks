@@ -32,8 +32,9 @@ htmlcov/
 Thumbs.db
 
 # --- ML / Data ---
-data/
-*.csv
+# - csv добавил для корректной работы при сдаче ДЗ -
+# data/
+# *.csv
 *.tsv
 *.parquet
 *.pkl

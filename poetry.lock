@@ -3258,4 +3258,4 @@ notebooks = ["ipykernel", "jupyterlab"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.13"
-content-hash = "8430ad43b0c0f66989dd98ea9df9109f615d32d55148c4739c2462568e1f9b6f"
+content-hash = "e00cde3b605c0a757ad04f083e45c57a6f6b260ebf9a431c93eb441584113830"
