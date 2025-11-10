@@ -10,12 +10,11 @@
 
 Чтобы найти условные экстремумы, добавим ограничение с множителем Лагранжа.  
 Пусть  
-$g(x,y)=\dfrac{x^{2}}{4}+y^{2}-5=0$.
+$g(x,y)=\dfrac{x^{2}}{4}+y^{2}-5=0$
 
 Строим вспомогательную функцию Лагранжа:
-$$
-\mathcal{L}(x,y,\lambda) = (-x - y) + \lambda\!\left(\dfrac{x^{2}}{4}+y^{2}-5\right).
-$$
+
+$\mathcal{L}(x,y,\lambda) = (-x - y) + \lambda\!\left(\dfrac{x^{2}}{4}+y^{2}-5\right)$
 
 ---
 
@@ -23,9 +22,9 @@ $$
 
 Это условие того, что функция не изменяется, то есть возможная точка экстремума.
 
-- $\dfrac{\partial \mathcal{L}}{\partial x} = -1 + \lambda \cdot \dfrac{x}{2} = 0 \Rightarrow \lambda x = 2 \Rightarrow x = \dfrac{2}{\lambda}.$
-- $\dfrac{\partial \mathcal{L}}{\partial y} = -1 + 2\lambda y = 0 \Rightarrow 2\lambda y = 1 \Rightarrow y = \dfrac{1}{2\lambda}.$
-- Ограничение: $\dfrac{x^{2}}{4} + y^{2} = 5.$
+- $\dfrac{\partial \mathcal{L}}{\partial x} = -1 + \lambda \cdot \dfrac{x}{2} = 0 \Rightarrow \lambda x = 2 \Rightarrow x = \dfrac{2}{\lambda}$
+- $\dfrac{\partial \mathcal{L}}{\partial y} = -1 + 2\lambda y = 0 \Rightarrow 2\lambda y = 1 \Rightarrow y = \dfrac{1}{2\lambda}$
+- Ограничение: $\dfrac{x^{2}}{4} + y^{2} = 5$
 
 ---
 
@@ -36,16 +35,16 @@ $$
 $\dfrac{1}{\lambda^{2}} + \dfrac{1}{4\lambda^{2}} = 5  
 \Rightarrow \dfrac{5}{4\lambda^{2}} = 5  
 \Rightarrow \lambda^{2} = \dfrac{1}{4}  
-\Rightarrow \lambda = \pm \dfrac{1}{2}.$
+\Rightarrow \lambda = \pm \dfrac{1}{2}$
 
 ---
 
 ### Шаг 3. Находим точки $(x, y)$
 
 - При $\lambda = \dfrac{1}{2}$:  
-  $x = 4,\ y = 1.$
+  $x = 4,\ y = 1$
 - При $\lambda = -\dfrac{1}{2}$:  
-  $x = -4,\ y = -1.$
+  $x = -4,\ y = -1$
 
 Обе точки лежат на заданном эллипсе, значит они подходят.
 
@@ -54,9 +53,9 @@ $\dfrac{1}{\lambda^{2}} + \dfrac{1}{4\lambda^{2}} = 5
 ## 2) Находим значения функции $z = e^{-x - y}$
 
 - В точке $(4, 1)$:  
-  $z = e^{-(4 + 1)} = e^{-5}$ - **минимум**.
+  $z = e^{-(4 + 1)} = e^{-5}$ - **минимум**
 - В точке $(-4, -1)$:  
-  $z = e^{-(-4 - 1)} = e^{5}$ - **максимум**.
+  $z = e^{-(-4 - 1)} = e^{5}$ - **максимум**
 
 **Пояснение:**  
 Функция $z = e^{-x - y}$ уменьшается, когда сумма $(x + y)$ увеличивается,
@@ -70,7 +69,7 @@ $\dfrac{1}{\lambda^{2}} + \dfrac{1}{4\lambda^{2}} = 5
 
 ## 3) Выводы
 
-- **Условный минимум:** точка $(4,\,1)$, значение $z_{\min} = e^{-5}$.
-- **Условный максимум:** точка $(-4,\,-1)$, значение $z_{\max} = e^{5}$.
+- **Условный минимум:** точка $(4,\,1)$, значение $z_{\min} = e^{-5}$
+- **Условный максимум:** точка $(-4,\,-1)$, значение $z_{\max} = e^{5}$
 
 ---
