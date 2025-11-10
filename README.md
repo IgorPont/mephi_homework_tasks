@@ -24,8 +24,67 @@ README.md
 # Установить зависимости проекта
 poetry install
 
-# Если нужны Jupyter-ноутбуки
+# Если нужны Jupyter-ноутбуки (группа extras notebooks)
 poetry install -E notebooks
+```
+
+---
+
+## 🧠 Работа с Jupyter Notebook / Lab
+
+### 📦 Первый запуск (только один раз)
+
+```bash
+poetry install -E notebooks
+
+# Зарегистрировать ядро Jupyter для этого проекта
+poetry run python -m ipykernel install --user   --name mephi-homework-tasks-py313   --display-name "Python 3.13 (mephi-homework-tasks)"
+```
+
+### ▶️ Запуск Jupyter
+
+```bash
+poetry run jupyter lab
+```
+
+или
+
+```bash
+poetry run jupyter notebook
+```
+
+После запуска интерфейс откроется в браузере.  
+В правом верхнем углу выберите ядро **Python 3.13 (mephi-homework-tasks)**.
+
+### 🛑 Остановка Jupyter
+
+- В терминале, где запущен сервер -> `Ctrl + C`, затем `y` для подтверждения.
+- Или через интерфейс: **File -> Shut Down**.
+
+### 🔁 Перезапуск
+
+```bash
+poetry run jupyter lab
+```
+
+### 🧹 Проверка и управление ядрами
+
+```bash
+# Показать список всех доступных ядер
+jupyter kernelspec list
+
+# Удалить (если пересоздали окружение)
+jupyter kernelspec remove mephi-homework-tasks-py313
+```
+
+### 💡 Пример Makefile для быстрого старта
+
+```make
+.PHONY: notebooks
+notebooks:
+	poetry install -E notebooks
+	poetry run python -m ipykernel install --user --name mephi-homework-tasks-py313 --display-name "Python 3.13 (mephi-homework-tasks)"
+	poetry run jupyter lab
 ```
 
 ---
@@ -73,18 +132,5 @@ poetry run pytest -q
 
 ---
 
-## 📓 Работа в Jupyter
-
-Чтобы добавить окружение Poetry в Jupyter:
-
-```bash
-poetry run python -m ipykernel install --user --name homework-tasks
-```
-
-После этого в Jupyter Notebook или Lab можно выбрать ядро **`homework-tasks`**.
-
----
-
-✍️ **Автор:** *IgorPont*  
-📧 *pontigor11@gmail.com*  
-🛠 *Python 3.13 • Poetry • Pytest • Ruff • Black*
+✍️ **Автор:** *IgorPont*
+🛠 *Python 3.13 • Poetry • Pytest • Ruff • Black • Jupyter*

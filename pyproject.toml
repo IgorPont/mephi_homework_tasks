@@ -37,7 +37,7 @@ seaborn = "^0.13.2"
 
 [tool.poetry.extras]
 # Группа "notebooks" (ставится командой "poetry install -E notebooks")
-notebooks = ["jupyterlab", "ipykernel"]
+notebooks = ["jupyterlab", "ipykernel", "notebook"]
 
 [tool.poetry.group.dev.dependencies]
 # Зависимости для разработки
