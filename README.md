@@ -41,7 +41,7 @@ poetry install -E notebooks
 poetry run python -m ipykernel install --user   --name mephi-homework-tasks-py313   --display-name "Python 3.13 (mephi-homework-tasks)"
 ```
 
-### ▶️ Запуск Jupyter
+### ▶️ Запуск Jupyter (новый и старый интерфейсы)
 
 ```bash
 poetry run jupyter lab
