@@ -32,10 +32,7 @@ $\mathcal{L}(x,y,\lambda) = (-x - y) + \lambda\!\left(\dfrac{x^{2}}{4}+y^{2}-5\r
 
 Подставим $x=\dfrac{2}{\lambda}$ и $y=\dfrac{1}{2\lambda}$ в уравнение эллипса:
 
-$\dfrac{1}{\lambda^{2}} + \dfrac{1}{4\lambda^{2}} = 5  
-\Rightarrow \dfrac{5}{4\lambda^{2}} = 5  
-\Rightarrow \lambda^{2} = \dfrac{1}{4}  
-\Rightarrow \lambda = \pm \dfrac{1}{2}$
+$1/(λ^2) + 1/(4λ^2) = 5 → 5/(4λ^2) = 5 → λ^2 = 1/4 → λ = ±1/2$
 
 ---
 
