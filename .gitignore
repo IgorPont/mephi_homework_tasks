@@ -44,6 +44,9 @@ ratings_movies.csv
 orders.csv
 products.csv
 
+# датасет к ДЗ модуля 7 Python для анализа данных
+diabetes_data.csv
+
 *.tsv
 *.parquet
 *.pkl
