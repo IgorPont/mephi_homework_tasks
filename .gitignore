@@ -35,6 +35,9 @@ Thumbs.db
 # - csv добавил для корректной работы при сдаче ДЗ -
 # data/
 # *.csv
+# датасет к ДЗ модуля 4 Python для анализа данных
+citibike-tripdata.csv
+
 *.tsv
 *.parquet
 *.pkl
