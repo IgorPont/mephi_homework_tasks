@@ -34,6 +34,8 @@ ipykernel = { version = "^6.29.5", optional = true }
 # Для работы с математическими выражениями как с формулами
 sympy = "^1.14.0"
 seaborn = "^0.13.2"
+# Для интерактивных графиков
+plotly = "^6.4.0"
 
 [tool.poetry.extras]
 # Группа "notebooks" (ставится командой "poetry install -E notebooks")

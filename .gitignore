@@ -47,6 +47,10 @@ products.csv
 # датасет к ДЗ модуля 7 Python для анализа данных
 diabetes_data.csv
 
+# датасет к сессионным заданиям Python для анализа данных
+dst-3.0_16_1_hh_database.csv
+ExchangeRates.csv
+
 *.tsv
 *.parquet
 *.pkl
