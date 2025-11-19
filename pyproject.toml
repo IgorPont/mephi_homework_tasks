@@ -36,6 +36,7 @@ sympy = "^1.14.0"
 seaborn = "^0.13.2"
 # Для интерактивных графиков
 plotly = "^6.4.0"
+notebook = "^7.5.0"
 
 [tool.poetry.extras]
 # Группа "notebooks" (ставится командой "poetry install -E notebooks")
@@ -49,6 +50,8 @@ ruff = "^0.6.9"
 black = "^24.10.0"
 # тестовый фреймворк
 pytest = "^8.3.3"
+# автодополнения pandas
+pandas-stubs = "^2.3.2.250926"
 
 [build-system]
 # Как собирать проект (Poetry Core отвечает за упаковку)
