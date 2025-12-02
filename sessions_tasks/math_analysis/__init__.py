@@ -4,5 +4,6 @@
 
 __all__ = [
     "homework_tasks_1",
-    "homework_tasks_2"
+    "homework_tasks_2",
+    "session01"
 ]
