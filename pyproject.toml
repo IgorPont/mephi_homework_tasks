@@ -37,6 +37,8 @@ seaborn = "^0.13.2"
 # Для интерактивных графиков
 plotly = "^6.4.0"
 notebook = "^7.5.0"
+statsmodels = "^0.14.6"
+pingouin = "^0.5.5"
 
 [tool.poetry.extras]
 # Группа "notebooks" (ставится командой "poetry install -E notebooks")
