@@ -7,8 +7,6 @@
     - посчитать, для скольких строк год выпуска не указан.
 """
 
-from __future__ import annotations
-
 import re
 from pathlib import Path
 

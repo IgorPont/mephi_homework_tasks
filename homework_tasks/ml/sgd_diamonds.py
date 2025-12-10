@@ -42,8 +42,6 @@
     poetry run python mephi_homework_tasks/homework_tasks/ml/sgd_diamonds.py
 """
 
-from __future__ import annotations
-
 from typing import Any, Dict, List, Tuple
 
 import numpy as np

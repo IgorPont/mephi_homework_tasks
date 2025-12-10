@@ -35,8 +35,6 @@ python -m optimization.universal_gd --func polyquartic2d --auto-x0 --compare-sci
 python -m optimization.universal_gd --func rastrigin --x0 0,0,0,0,0 --grad-policy finite
 """
 
-from __future__ import annotations
-
 from dataclasses import dataclass
 from typing import Callable, Tuple, List, Optional, Dict
 import argparse

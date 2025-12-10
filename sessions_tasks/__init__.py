@@ -5,5 +5,6 @@
 __all__ = [
     "programming_in_python",
     "math_analysis",
-    "additional_chapters_higher_mathematics"
+    "additional_chapters_higher_mathematics",
+    "project_practice",
 ]

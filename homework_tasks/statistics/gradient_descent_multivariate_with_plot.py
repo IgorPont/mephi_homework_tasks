@@ -14,8 +14,6 @@
 [b0, TV, Radio, Newspaper] ≈ [4.635, 0.054, 0.107, -0.002]
 """
 
-from __future__ import annotations
-
 import os
 from dataclasses import dataclass
 from typing import Iterable, List, Optional, Tuple

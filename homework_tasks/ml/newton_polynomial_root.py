@@ -44,8 +44,6 @@
     Answer (rounded to 3 decimals): 0.629
 """
 
-from __future__ import annotations
-
 from dataclasses import dataclass
 from typing import Callable, Dict, Tuple, Optional
 
