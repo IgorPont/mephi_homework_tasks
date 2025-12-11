@@ -66,14 +66,14 @@ rm -rf ~/Library/Caches/huggingface/hub/models--MIT--ast-finetuned-urban8k
 
 ### ⚙️ Установка и запуск
 
-#### 1. Скачивание проекта
+#### 1. Скачать проект целиком
 
 ```bash
 git clone https://github.com/IgorPont/mephi_homework_tasks
 cd mephi_homework_tasks/sessions_tasks/project_practice/semester01/UrbanEcoSoundMonitor
 ```
 
-или просто скопировать папку `UrbanEcoSoundMonitor/`.
+**или просто скопировать папку `UrbanEcoSoundMonitor/`**
 
 ---
 
