@@ -1,5 +1,6 @@
 """
-Пакет сессионных заданий. Подпакеты — по дисциплинам (programming_in_python, math_analysis и т.д.).
+Пакет сессионных заданий.
+Подпакеты -> по дисциплинам (programming_in_python, math_analysis ...)
 """
 
 __all__ = [
