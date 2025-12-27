@@ -8,4 +8,5 @@ __all__ = [
     "math_analysis",
     "additional_chapters_higher_mathematics",
     "project_practice",
+    "ab_course",
 ]
