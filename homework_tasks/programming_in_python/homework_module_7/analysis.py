@@ -5,8 +5,8 @@
 
 from pathlib import Path
 
-import pandas as pd
 import numpy as np
+import pandas as pd
 
 # --- Константы путей ---------------------------------------------------------
 
@@ -18,6 +18,7 @@ DIABETES_FILE: Path = BASE_DIR / "data" / "diabetes_data.csv"
 
 
 # --- Загрузка данных ---------------------------------------------------------
+
 
 def load_diabetes_data(path: Path = DIABETES_FILE) -> pd.DataFrame:
     """
@@ -39,6 +40,7 @@ def load_diabetes_data(path: Path = DIABETES_FILE) -> pd.DataFrame:
 
 
 # --- Задача 8.1: поиск и удаление дубликатов --------------------------------
+
 
 def task_8_1(df: pd.DataFrame) -> pd.DataFrame:
     """

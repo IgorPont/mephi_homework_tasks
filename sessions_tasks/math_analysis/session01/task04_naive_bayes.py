@@ -26,9 +26,9 @@
 from pathlib import Path
 
 import pandas as pd
+from sklearn.metrics import accuracy_score
 from sklearn.model_selection import train_test_split
 from sklearn.naive_bayes import CategoricalNB
-from sklearn.metrics import accuracy_score
 
 
 def main() -> None:
@@ -60,9 +60,7 @@ def main() -> None:
 
     # 4) Разбиваем на обучающую и тестовую выборки (30% тест, фиксируем random_state для повторяемости),
     #    stratify=y - сохраняем пропорции классов в train и test.
-    X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=0.30, random_state=42, stratify=y
-    )
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.30, random_state=42, stratify=y)
 
     # 5) Обучаем наивный Байес для категориальных признаков
     model = CategoricalNB()

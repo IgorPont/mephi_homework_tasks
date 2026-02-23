@@ -54,21 +54,19 @@ def main() -> None:
 
     # Проверка: сумма вероятностей не должна превышать 1
     if missing < 0:
-        raise ValueError(
-            f"Ошибка: сумма известных вероятностей превышает 1 (сумма = {sum_known:.2f})."
-        )
+        raise ValueError(f"Ошибка: сумма известных вероятностей превышает 1 (сумма = {sum_known:.2f}).")
 
     # Округляем до сотых и записываем вероятность для 7 писем
     p[7] = round(missing, 2)
 
     # 2) Математическое ожидание (E[X])
     expected_value = 0
-    for xi, pi in zip(x, p):
+    for xi, pi in zip(x, p, strict=False):
         expected_value += xi * pi
 
     # 3) Дисперсия (D[X]) = sum((x_i - E[X])^2 * p_i)
     variance = 0
-    for xi, pi in zip(x, p):
+    for xi, pi in zip(x, p, strict=False):
         variance += ((xi - expected_value) ** 2) * pi
 
     # Округляем результаты до сотых
@@ -78,7 +76,7 @@ def main() -> None:
     # 4) Вывод
     print("\n================== ЗАДАНИЕ 6 - Распределение ==================")
     print("Таблица вероятностей (x_i | p_i):")
-    for xi, pi in zip(x, p):
+    for xi, pi in zip(x, p, strict=False):
         print(f"  {xi:>2} | {pi:.2f}")
     print("---------------------------------------------------------------")
     print(f"1) Вероятность получить 7 писем: p(7) = {p[7]:.2f}")

@@ -15,21 +15,22 @@
 """
 
 import os
+from collections.abc import Iterable
 from dataclasses import dataclass
-from typing import Iterable, List, Optional, Tuple
 
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
-
 
 # ==========================
 # Конфигурация обучения
 # ==========================
 
+
 @dataclass
 class GDConfig:
     """Параметры градиентного спуска."""
+
     # Шаг обучения 5 * 10 ^ −5 = 0.00005
     learning_rate: float = 5e-5
     # Количество итераций шагов
@@ -42,14 +43,15 @@ class GDConfig:
 # Модель линейной регрессии
 # ==========================
 
+
 class GradientDescentLinearRegressor:
     """Линейная регрессия на чистом NumPy с обучением градиентным спуском."""
 
-    def __init__(self, config: Optional[GDConfig] = None):
+    def __init__(self, config: GDConfig | None = None):
         self.config = config or GDConfig()
-        self.theta_: Optional[np.ndarray] = None
-        self.costs_: List[float] = []
-        self.steps_: List[int] = []
+        self.theta_: np.ndarray | None = None
+        self.costs_: list[float] = []
+        self.steps_: list[int] = []
 
     @staticmethod
     def add_intercept(X: np.ndarray) -> np.ndarray:
@@ -65,7 +67,7 @@ class GradientDescentLinearRegressor:
         """
         n = y.shape[0]
         residuals = X @ theta - y
-        return float((residuals ** 2).sum() / n)
+        return float((residuals**2).sum() / n)
 
     @staticmethod
     def _compute_gradient(X: np.ndarray, y: np.ndarray, theta: np.ndarray) -> np.ndarray:
@@ -142,9 +144,7 @@ class GradientDescentLinearRegressor:
         plt.show()
 
     @staticmethod
-    def plot_convergence_multi(
-            histories: Iterable[Tuple[str, List[int], List[float]]]
-    ) -> None:
+    def plot_convergence_multi(histories: Iterable[tuple[str, list[int], list[float]]]) -> None:
         """Сравнивает сходимость при разных значениях alpha."""
         plt.figure(figsize=(9, 5))
         for label, steps, costs in histories:
@@ -203,7 +203,8 @@ if __name__ == "__main__":
     print("    Меньше — лучше (но сравнивать корректно на одной и той же шкале и выборке).")
     print(f"R² (коэффициент детерминации): {r2:.4f}")
     print(
-        "  └ Доля дисперсии продаж, объяснённая моделью (1.0 — идеальная подгонка, 0.0 — нет улучшения относительно среднего).")
+        "  └ Доля дисперсии продаж, объяснённая моделью (1.0 — идеальная подгонка, 0.0 — нет улучшения относительно среднего)."
+    )
     print("    Для одного признака TV R² ≈ 0.61 (как в классическом примере), для трёх признаков обычно выше.\n")
 
     print("Сходимость (Convergence):")

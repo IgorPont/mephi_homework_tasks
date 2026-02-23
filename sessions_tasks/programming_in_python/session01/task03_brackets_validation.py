@@ -18,8 +18,6 @@
     "abc(def)" -> True
 """
 
-from typing import Dict
-
 
 def is_brackets_balanced(s: str) -> bool:
     """
@@ -45,7 +43,7 @@ def is_brackets_balanced(s: str) -> bool:
         print(is_brackets_balanced("([)]")) # False
     """
     # ключ - закрывающая скобка, значение - открывающая скобка
-    pairs: Dict[str, str] = {")": "(", "]": "[", "}": "{"}
+    pairs: dict[str, str] = {")": "(", "]": "[", "}": "{"}
     stack: list[str] = []
 
     for char in s:

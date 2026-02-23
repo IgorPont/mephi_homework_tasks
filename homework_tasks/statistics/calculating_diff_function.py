@@ -5,7 +5,7 @@ import sympy as sp
 """
 
 # 1️⃣ Объявляем переменную
-x = sp.Symbol('x')
+x = sp.Symbol("x")
 
 # 2️⃣ Задаем функцию
 # f = 2 * (x ** 2) + 1
@@ -14,7 +14,7 @@ x = sp.Symbol('x')
 # f = x / (x**2 + 1)
 # f = sp.sqrt(1 + x**2)
 # f = (x**4) + (5*x)
-f = x**3/4 - 3*x
+f = x**3 / 4 - 3 * x
 
 # 3️⃣ Находим первую производную
 f_prime = sp.diff(f, x)

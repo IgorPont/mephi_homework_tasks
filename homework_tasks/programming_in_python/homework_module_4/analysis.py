@@ -24,6 +24,7 @@ DATA_PATH = BASE_DIR / "data" / "citibike-tripdata.csv"
 
 # --- Функции для работы с датасетом -----------------------------------------
 
+
 def load_citibike() -> pd.DataFrame:
     """
     Загружает датасет Citi Bike из файла `citibike-tripdata.csv`.
@@ -225,7 +226,7 @@ def check_statements(df: pd.DataFrame):
     df_birth_valid = df[df["birth year"].notna() & (df["birth year"] > 1900)]
     max_birth = df_birth_valid["birth year"].max()
     min_age = 2018 - max_birth
-    B_result = (min_age == 10)
+    B_result = min_age == 10
 
     print(f"[B] Самый поздний год рождения: {max_birth}")
     print(f"[B] Минимальный возраст клиента: {min_age}")
@@ -234,7 +235,7 @@ def check_statements(df: pd.DataFrame):
     # ---------- C ----------
     start_counts = df["start station name"].value_counts(ascending=True)
     least_start = start_counts.index[0]
-    C_result = (least_start == "Eastern Pkwy & Washington Ave")
+    C_result = least_start == "Eastern Pkwy & Washington Ave"
 
     print(f"[C] Самая непопулярная стартовая стоянка: '{least_start}'")
     print(f"[C] C → {C_result}\n")
@@ -242,7 +243,7 @@ def check_statements(df: pd.DataFrame):
     # ---------- D ----------
     end_counts = df["end station name"].value_counts(ascending=False)
     most_popular_end = end_counts.index[0]
-    D_result = (most_popular_end == "Liberty Light Rail")
+    D_result = most_popular_end == "Liberty Light Rail"
 
     print(f"[D] Самая популярная конечная стоянка: '{most_popular_end}'")
     print(f"[D] D → {D_result}\n")
@@ -250,12 +251,7 @@ def check_statements(df: pd.DataFrame):
     # Итог
     print("=== Итог: истины только A и C ===\n")
 
-    return {
-        "A": A_result,
-        "B": B_result,
-        "C": C_result,
-        "D": D_result
-    }
+    return {"A": A_result, "B": B_result, "C": C_result, "D": D_result}
 
 
 def drop_station_ids(df: pd.DataFrame) -> int:
@@ -325,13 +321,11 @@ if __name__ == "__main__":
     # --- Задание 6.1: количество пропусков в start station id ----------------
     citibike_df = load_citibike()
     missing_start_station_id = count_missing_start_station_id(citibike_df)
-    print(f"[6.1] Количество пропусков в столбце 'start station id': "
-          f"{missing_start_station_id}")
+    print(f"[6.1] Количество пропусков в столбце 'start station id': " f"{missing_start_station_id}")
 
     # --- Задание 6.2: тип столбцов starttime и stoptime ----------------------
     start_stop_dtype = get_start_stop_dtype_raw()
-    print(f"[6.2] Тип данных столбцов 'starttime' и 'stoptime' "
-          f"при чтении через pd.read_csv: {start_stop_dtype}")
+    print(f"[6.2] Тип данных столбцов 'starttime' и 'stoptime' " f"при чтении через pd.read_csv: {start_stop_dtype}")
 
     # --- Задание 6.3: самая популярная стартовая станция --------------------
     popular_station = most_popular_start_station(citibike_df)

@@ -11,8 +11,6 @@
     "abcdef" -> не палиндром
 """
 
-from typing import Tuple
-
 
 def is_palindrome(s: str) -> bool:
     """
@@ -27,7 +25,7 @@ def is_palindrome(s: str) -> bool:
     return s == s[::-1]
 
 
-def is_almost_palindrome(s: str) -> Tuple[bool, str]:
+def is_almost_palindrome(s: str) -> tuple[bool, str]:
     """
     Проверяет, является ли строка палиндромом или почти палиндромом.
 
@@ -47,7 +45,7 @@ def is_almost_palindrome(s: str) -> Tuple[bool, str]:
     while left < right:
         if s[left] != s[right]:
             # пробуем удалить символ слева или справа
-            s1 = s[left + 1:right + 1]
+            s1 = s[left + 1 : right + 1]
             s2 = s[left:right]
             if s1 == s1[::-1] or s2 == s2[::-1]:
                 return True, "почти палиндром"

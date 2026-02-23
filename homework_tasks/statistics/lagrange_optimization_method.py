@@ -75,14 +75,14 @@ from sympy import *
 # при ограничении x + y = 20 (целые x,y)
 # --------------------------------------------
 
-from sympy import symbols, diff, solve, Matrix, N
+from sympy import Matrix, N, diff, solve, symbols
 
 # 1) Объявляем переменные
 # real=True — переменные вещественные; w — множитель Лагранжа
-x, y, w = symbols('x y w', real=True)
+x, y, w = symbols("x y w", real=True)
 
 # 2) Целевая функция (то, что хотим максимизировать/минимизировать)
-f = x ** 2 + 2 * y ** 2
+f = x**2 + 2 * y**2
 
 # 3) Ограничение: x + y = 20  ->  перепишем как g(x,y) = x + y - 20 = 0
 g = x + y - 20
@@ -112,7 +112,7 @@ print(f"f(x*, y*) = {f.subs({x: x_star, y: y_star})} ≈ {N(f.subs({x: x_star, y
 # Идея: из ограничения y = 20 - x, тогда F(x) = f(x, 20 - x)
 # Классификация: F''(x*) > 0 => минимум, F''(x*) < 0 => максимум
 
-F = (x ** 2 + 2 * (20 - x) ** 2)  # подставили y = 20 - x
+F = x**2 + 2 * (20 - x) ** 2  # подставили y = 20 - x
 Fx = diff(F, x)  # первая производная F'(x)
 Fxx = diff(Fx, x)  # вторая производная F''(x)
 
@@ -144,8 +144,7 @@ print(f"Классификация по F''(x*): F''(x*) = {Fxx_at_star} -> {kin
 f_xx = diff(f, x, x)  # 2
 f_xy = diff(f, x, y)  # 0
 f_yy = diff(f, y, y)  # 4
-Hf = Matrix([[f_xx, f_xy],
-             [f_xy, f_yy]])
+Hf = Matrix([[f_xx, f_xy], [f_xy, f_yy]])
 
 # Касательный вектор к прямой x+y=20: t = (1, -1) (он ортогонален grad g = (1,1))
 t = Matrix([1, -1])

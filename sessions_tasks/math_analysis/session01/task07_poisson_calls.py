@@ -37,7 +37,7 @@ def poisson_p(k: int, lambd: float) -> float:
     """
     Вычисляет вероятность P(k) по формуле Пуассона
     """
-    return (lambd ** k) * math.exp(-lambd) / math.factorial(k)
+    return (lambd**k) * math.exp(-lambd) / math.factorial(k)
 
 
 def main() -> None:
@@ -59,7 +59,7 @@ def main() -> None:
     # 3) Выводим
     print("\n==== ЗАДАНИЕ 7 - Распределение Пуассона ====")
     print(f"lambd = {lambd}")
-    for k, p in zip(range(2, 5), probs):
+    for k, p in zip(range(2, 5), probs, strict=False):
         print(f"P({k}) = {p:.5f}")
     print("--------------------------------------------")
     print(f"Ответ: вероятность того, что за час поступит \nот 2 до 4 звонков = {total_p:.3f}")

@@ -76,4 +76,4 @@ if __name__ == "__main__":
 
     print("🧩 Результат работы compress_string():\n")
     for text in examples:
-        print(f"Вход: {repr(text)} -> Выход: {compress_string(text)}")
+        print(f"Вход: {text!r} -> Выход: {compress_string(text)}")

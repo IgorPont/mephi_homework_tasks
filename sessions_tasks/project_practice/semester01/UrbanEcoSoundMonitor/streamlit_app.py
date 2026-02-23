@@ -19,7 +19,7 @@ Streamlit-приложение UrbanEcoSoundMonitor.
 
 import dataclasses
 from pathlib import Path
-from typing import List, Dict, Any
+from typing import Any
 
 import librosa
 import numpy as np
@@ -56,7 +56,7 @@ NOISY_KEYWORDS = [
 
 # Упрощенный словарь переводов классов ESC-50 на русский.
 # Если какого-то класса нет в словаре, будет отображаться английское название.
-LABEL_TRANSLATIONS: Dict[str, str] = {
+LABEL_TRANSLATIONS: dict[str, str] = {
     "Whoop": "Возглас / вскрик",
     "Static": "Статический шум",
     "Laughter": "Смех",
@@ -73,7 +73,7 @@ LABEL_TRANSLATIONS: Dict[str, str] = {
 }
 
 # Более подробные русские описания некоторых классов
-LABEL_RU: Dict[str, str] = {
+LABEL_RU: dict[str, str] = {
     "Siren": "Сирена (машина скорой, полиция, пожарные)",
     "Car horn": "Автомобильный сигнал",
     "Engine": "Работающий двигатель",
@@ -97,6 +97,7 @@ LABEL_RU: Dict[str, str] = {
 
 # --- Вспомогательные структуры данных ---
 
+
 @dataclasses.dataclass
 class ClipPrediction:
     """
@@ -114,11 +115,12 @@ class ClipPrediction:
     """
 
     file_path: Path
-    top_labels: List[Dict[str, Any]]
+    top_labels: list[dict[str, Any]]
     has_noisy_label: bool
 
 
 # --- Утилиты работы с метками ---
+
 
 def translate_label(label: str) -> str:
     """
@@ -136,6 +138,7 @@ def translate_label(label: str) -> str:
 
 
 # --- Утилиты работы с аудио ---
+
 
 def load_audio(file_path: Path, target_sample_rate: int = TARGET_SAMPLE_RATE) -> tuple[np.ndarray, int]:
     """
@@ -162,6 +165,7 @@ def load_audio(file_path: Path, target_sample_rate: int = TARGET_SAMPLE_RATE) ->
 
 
 # --- Модель и инференс ----
+
 
 @st.cache_resource(show_spinner="Загружаю предобученную модель AST с Hugging Face...")
 def load_audio_classifier(device: str = "cpu"):
@@ -219,8 +223,7 @@ def classify_clip(file_path: Path, audio_pipe, top_k: int = 5) -> ClipPrediction
 
     # Проверяем, есть ли среди предсказаний шумные классы (по английским ключевым словам)
     has_noisy = any(
-        any(keyword.lower() in pred["label"].lower() for keyword in NOISY_KEYWORDS)
-        for pred in raw_predictions
+        any(keyword.lower() in pred["label"].lower() for keyword in NOISY_KEYWORDS) for pred in raw_predictions
     )
 
     return ClipPrediction(
@@ -230,7 +233,7 @@ def classify_clip(file_path: Path, audio_pipe, top_k: int = 5) -> ClipPrediction
     )
 
 
-def analyze_folder(audio_dir: Path, audio_pipe, top_k: int = 5) -> List[ClipPrediction]:
+def analyze_folder(audio_dir: Path, audio_pipe, top_k: int = 5) -> list[ClipPrediction]:
     """
     Запускает инференс для всех файлов в указанной папке.
 
@@ -246,7 +249,7 @@ def analyze_folder(audio_dir: Path, audio_pipe, top_k: int = 5) -> List[ClipPred
         List[ClipPrediction]
             Список результатов по всем файлам.
     """
-    predictions: List[ClipPrediction] = []
+    predictions: list[ClipPrediction] = []
 
     for file_path in sorted(audio_dir.iterdir()):
         if not file_path.is_file() or file_path.suffix.lower() not in AUDIO_EXTENSIONS:
@@ -259,7 +262,8 @@ def analyze_folder(audio_dir: Path, audio_pipe, top_k: int = 5) -> List[ClipPred
 
 # --- Визуализация статистики ---
 
-def build_summary_dataframe(predictions: List[ClipPrediction]) -> pd.DataFrame:
+
+def build_summary_dataframe(predictions: list[ClipPrediction]) -> pd.DataFrame:
     """
     Строит сводную таблицу по результатам инференса.
 
@@ -279,7 +283,7 @@ def build_summary_dataframe(predictions: List[ClipPrediction]) -> pd.DataFrame:
         - Вероятность
         - Шумовой класс (0/1)
     """
-    rows: List[Dict[str, Any]] = []
+    rows: list[dict[str, Any]] = []
 
     for item in predictions:
         top = item.top_labels[0] if item.top_labels else {"label": "N/A", "score": 0.0}
@@ -354,6 +358,7 @@ def plot_noisy_share(df: pd.DataFrame) -> None:
 
 # --- UI Streamlit ---
 
+
 def sidebar_controls() -> tuple[str, Path | None]:
     """
     Рисует элементы управления в боковой панели и возвращает выбор пользователя.
@@ -387,8 +392,7 @@ def sidebar_controls() -> tuple[str, Path | None]:
         return device_choice, None
 
     st.sidebar.info(
-        "Совет: положи свои .wav-файлы (2–4 секунды) в указанную папку, "
-        "они появятся в списке для пакетного анализа",
+        "Совет: положи свои .wav-файлы (2–4 секунды) в указанную папку, " "они появятся в списке для пакетного анализа",
     )
 
     return device_choice, audio_dir
@@ -438,11 +442,7 @@ def main() -> None:
     run_analysis = st.button("🚀 Запустить анализ папки")
 
     if run_analysis:
-        audio_files = [
-            f
-            for f in sorted(audio_dir.iterdir())
-            if f.is_file() and f.suffix.lower() in AUDIO_EXTENSIONS
-        ]
+        audio_files = [f for f in sorted(audio_dir.iterdir()) if f.is_file() and f.suffix.lower() in AUDIO_EXTENSIONS]
 
         if not audio_files:
             st.warning("В папке нет подходящих аудио-файлов")
@@ -450,7 +450,7 @@ def main() -> None:
 
         st.write(f"Найдено файлов для анализа: **{len(audio_files)}**")
 
-        predictions: List[ClipPrediction] = []
+        predictions: list[ClipPrediction] = []
         progress_bar = st.progress(0.0)
 
         for idx, file_path in enumerate(audio_files, start=1):
@@ -471,7 +471,7 @@ def main() -> None:
 
     if st.session_state.get("df_summary") is not None:
         df_summary: pd.DataFrame = st.session_state["df_summary"]
-        predictions: List[ClipPrediction] = st.session_state["predictions"]
+        predictions: list[ClipPrediction] = st.session_state["predictions"]
 
         st.subheader("📊 Сводная таблица по аудио-файлам")
         st.dataframe(df_summary, use_container_width=True)
@@ -489,9 +489,7 @@ def main() -> None:
             options=df_summary["Файл"].tolist(),
         )
 
-        selected = next(
-            item for item in predictions if item.file_path.name == selected_file
-        )
+        selected = next(item for item in predictions if item.file_path.name == selected_file)
 
         st.write(f"**Файл:** `{selected.file_path.name}`")
         st.write("Top-5 предсказаний модели:")
@@ -517,7 +515,7 @@ def main() -> None:
                 "акустическая обстановка выглядит спокойной"
             )
     else:
-        st.info("Нажми кнопку **\"🚀 Запустить анализ папки\"**, чтобы запустить инференс")
+        st.info('Нажми кнопку **"🚀 Запустить анализ папки"**, чтобы запустить инференс')
 
 
 if __name__ == "__main__":

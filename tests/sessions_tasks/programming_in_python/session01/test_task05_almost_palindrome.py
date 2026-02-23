@@ -11,9 +11,10 @@
 """
 
 import pytest
+
 from sessions_tasks.programming_in_python.session01.task05_almost_palindrome import (
-    is_palindrome,
     is_almost_palindrome,
+    is_palindrome,
 )
 
 

@@ -9,6 +9,7 @@
 """
 
 import pytest
+
 from sessions_tasks.programming_in_python.session01.task03_brackets_validation import is_brackets_balanced
 
 

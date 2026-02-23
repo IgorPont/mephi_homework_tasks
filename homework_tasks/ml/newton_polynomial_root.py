@@ -44,8 +44,8 @@
     Answer (rounded to 3 decimals): 0.629
 """
 
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Callable, Dict, Tuple, Optional
 
 
 @dataclass(frozen=True)
@@ -53,6 +53,7 @@ class NewtonConfig:
     """
     Параметры метода Ньютона.
     """
+
     tol: float = 1e-12  # критерий остановки по |x_{k+1} - x_k|
     max_iter: int = 100  # защита от бесконечного цикла
     eps_df: float = 1e-12  # минимально допустимый модуль производной
@@ -68,13 +69,12 @@ class NewtonRaphson:
         root, info = solver.solve(x0=0.7)
     """
 
-    def __init__(self, f: Callable[[float], float], df: Callable[[float], float],
-                 config: Optional[NewtonConfig] = None):
+    def __init__(self, f: Callable[[float], float], df: Callable[[float], float], config: NewtonConfig | None = None):
         self.f = f
         self.df = df
         self.cfg = config or NewtonConfig()
 
-    def solve(self, x0: float) -> Tuple[float, Dict[str, object]]:
+    def solve(self, x0: float) -> tuple[float, dict[str, object]]:
         """
         Запускает метод Ньютона.
 
@@ -145,24 +145,15 @@ class NewtonRaphson:
 
 # ---------- Конкретная учебная задача ----------
 
+
 def f_polynomial(x: float) -> float:
     """f(x) = 6x^5 - 5x^4 - 4x^3 + 3x^2"""
-    return (
-            6.0 * x ** 5
-            - 5.0 * x ** 4
-            - 4.0 * x ** 3
-            + 3.0 * x ** 2
-    )
+    return 6.0 * x**5 - 5.0 * x**4 - 4.0 * x**3 + 3.0 * x**2
 
 
 def df_polynomial(x: float) -> float:
     """f'(x) = 30x^4 - 20x^3 - 12x^2 + 6x"""
-    return (
-            30.0 * x ** 4
-            - 20.0 * x ** 3
-            - 12.0 * x ** 2
-            + 6.0 * x
-    )
+    return 30.0 * x**4 - 20.0 * x**3 - 12.0 * x**2 + 6.0 * x
 
 
 if __name__ == "__main__":

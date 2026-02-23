@@ -9,6 +9,7 @@
 """
 
 import pytest
+
 from sessions_tasks.programming_in_python.session01.task02_string_compress import compress_string
 
 

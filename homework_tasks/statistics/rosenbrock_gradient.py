@@ -35,14 +35,15 @@ python -m optimization.universal_gd --func polyquartic2d --auto-x0 --compare-sci
 python -m optimization.universal_gd --func rastrigin --x0 0,0,0,0,0 --grad-policy finite
 """
 
-from dataclasses import dataclass
-from typing import Callable, Tuple, List, Optional, Dict
 import argparse
 import sys
+from collections import deque
+from collections.abc import Callable
+from dataclasses import dataclass
 from math import isfinite
+
 import numpy as np
 from numpy.typing import NDArray
-from collections import deque
 
 # SciPy – опционально, только для сравнения
 try:
@@ -57,9 +58,9 @@ except Exception:
 #  Автогенерация градиента
 # =========================
 
+
 def _central_diff_grad(
-        f: Callable[[NDArray[np.floating]], float],
-        eps: float = 1e-8
+    f: Callable[[NDArray[np.floating]], float], eps: float = 1e-8
 ) -> Callable[[NDArray[np.floating]], NDArray[np.floating]]:
     """N-мерная центральная разность (стабильно и без зависимостей)."""
 
@@ -86,9 +87,7 @@ def _central_diff_grad(
 
 
 def make_gradient(
-        f: Callable[[NDArray[np.floating]], float],
-        prefer: str = "auto",
-        eps: float = 1e-8
+    f: Callable[[NDArray[np.floating]], float], prefer: str = "auto", eps: float = 1e-8
 ) -> Callable[[NDArray[np.floating]], NDArray[np.floating]]:
     """
     Конструирует ∇f:
@@ -120,15 +119,16 @@ def make_gradient(
 #  ЛИНЕЙНЫЙ ПОИСК (ARMIJO) — устойчивый
 # =========================
 
+
 def backtracking_armijo(
-        f: Callable[[NDArray[np.floating]], float],
-        g: Callable[[NDArray[np.floating]], NDArray[np.floating]],
-        x: NDArray[np.floating],
-        p: NDArray[np.floating],
-        alpha0: float = 1.0,
-        c: float = 1e-4,
-        rho: float = 0.5,
-        max_trials: int = 20,
+    f: Callable[[NDArray[np.floating]], float],
+    g: Callable[[NDArray[np.floating]], NDArray[np.floating]],
+    x: NDArray[np.floating],
+    p: NDArray[np.floating],
+    alpha0: float = 1.0,
+    c: float = 1e-4,
+    rho: float = 0.5,
+    max_trials: int = 20,
 ) -> tuple[float, int]:
     """
     Подбор шага α по Армихо:
@@ -141,7 +141,7 @@ def backtracking_armijo(
     except Exception:
         fx = np.inf
     gx = g(x)
-    with np.errstate(over='ignore', invalid='ignore'):
+    with np.errstate(over="ignore", invalid="ignore"):
         dot = float(np.dot(gx, p))
     if not np.isfinite(dot):
         dot = 0.0
@@ -150,7 +150,7 @@ def backtracking_armijo(
     reductions = 0
     for _ in range(max_trials):
         try:
-            with np.errstate(over='ignore', invalid='ignore'):
+            with np.errstate(over="ignore", invalid="ignore"):
                 f_trial = f(x + alpha * p)
         except Exception:
             f_trial = np.inf
@@ -168,21 +168,18 @@ def backtracking_armijo(
 #  Вспомогательное: автовыбор x0
 # =========================
 
+
 def autoselect_x0(
-        f: Callable[[NDArray[np.floating]], float],
-        dim: int,
-        samples: int = 64,
-        radius: float = 5.0,
-        seed: int = 42
+    f: Callable[[NDArray[np.floating]], float], dim: int, samples: int = 64, radius: float = 5.0, seed: int = 42
 ) -> NDArray[np.floating]:
     """
     Выбирает стартовую точку как argmin по набору кандидатов:
       - 0-вектор, ±базисные, + случайные точки в [-radius, radius]^n.
     """
     rng = np.random.default_rng(seed)
-    candidates: List[NDArray[np.floating]] = [np.zeros(dim, dtype=float)]
+    candidates: list[NDArray[np.floating]] = [np.zeros(dim, dtype=float)]
     for i in range(dim):
-        e = np.zeros(dim);
+        e = np.zeros(dim)
         e[i] = 1.0
         candidates += [e.copy(), -e.copy()]
     for _ in range(max(0, samples - len(candidates))):
@@ -204,10 +201,11 @@ def autoselect_x0(
 #  ГРАДИЕНТНЫЙ СПУСК
 # =========================
 
+
 @dataclass(slots=True)
 class GradientDescent:
     f: Callable[[NDArray[np.floating]], float]
-    g: Optional[Callable[[NDArray[np.floating]], NDArray[np.floating]]] = None
+    g: Callable[[NDArray[np.floating]], NDArray[np.floating]] | None = None
     step: float = 1.0
     tol_grad: float = 1e-8
     tol_step: float = 1e-12
@@ -228,8 +226,9 @@ class GradientDescent:
     def _grad(self) -> Callable[[NDArray[np.floating]], NDArray[np.floating]]:
         return self.g if self.g is not None else make_gradient(self.f, prefer=self.grad_policy, eps=self.fd_eps)
 
-    def run(self, x0: NDArray[np.floating] | Tuple[float, ...]) -> Tuple[
-        NDArray[np.floating], float, int, List[float], dict, NDArray[np.floating]]:
+    def run(
+        self, x0: NDArray[np.floating] | tuple[float, ...]
+    ) -> tuple[NDArray[np.floating], float, int, list[float], dict, NDArray[np.floating]]:
         """
         Возвращает: (x_star, f_star, iters, history_f, meta, trajectory)
         meta = { 'stop_reason', 'grad_norm', 'alpha', 'bt_reductions' }
@@ -237,9 +236,9 @@ class GradientDescent:
         """
         x = np.asarray(x0, dtype=float)
         gfun = self._grad()
-        history_f: List[float] = []
+        history_f: list[float] = []
         df_window: deque[float] = deque(maxlen=max(1, self.patience_f))
-        traj: List[NDArray[np.floating]] = [x.copy()]
+        traj: list[NDArray[np.floating]] = [x.copy()]
 
         self._stop_reason = "max_iter"
         self._last_alpha = 0.0
@@ -312,13 +311,14 @@ class GradientDescent:
 #  РЕЕСТР ФУНКЦИЙ
 # =========================
 
+
 @dataclass(frozen=True)
 class FuncSpec:
     name: str
     func: Callable[[NDArray[np.floating]], float]
-    dim: Optional[int]  # None => любой n
+    dim: int | None  # None => любой n
     description: str
-    minima_note: Optional[str] = None  # подсказка про минимум(ы)
+    minima_note: str | None = None  # подсказка про минимум(ы)
 
 
 def rosenbrock_nd(x: NDArray[np.floating]) -> float:
@@ -328,7 +328,7 @@ def rosenbrock_nd(x: NDArray[np.floating]) -> float:
 
 def rosenbrock_2d(x: NDArray[np.floating]) -> float:
     x1, x2 = float(x[0]), float(x[1])
-    return (1.0 - x1) ** 2 + 100.0 * (x2 - x1 ** 2) ** 2
+    return (1.0 - x1) ** 2 + 100.0 * (x2 - x1**2) ** 2
 
 
 def quadratic2d(x: NDArray[np.floating]) -> float:
@@ -339,7 +339,7 @@ def quadratic2d(x: NDArray[np.floating]) -> float:
 def rastrigin(x: NDArray[np.floating]) -> float:
     x = np.asarray(x, dtype=float)
     n = x.size
-    return 10.0 * n + np.sum(x ** 2 - 10.0 * np.cos(2 * np.pi * x))
+    return 10.0 * n + np.sum(x**2 - 10.0 * np.cos(2 * np.pi * x))
 
 
 def himmelblau(x: NDArray[np.floating]) -> float:
@@ -350,28 +350,46 @@ def himmelblau(x: NDArray[np.floating]) -> float:
 
 def beale(x: NDArray[np.floating]) -> float:
     x1, x2 = float(x[0]), float(x[1])
-    return (1.5 - x1 + x1 * x2) ** 2 + (2.25 - x1 + x1 * x2 ** 2) ** 2 + (2.625 - x1 + x1 * x2 ** 3) ** 2
+    return (1.5 - x1 + x1 * x2) ** 2 + (2.25 - x1 + x1 * x2**2) ** 2 + (2.625 - x1 + x1 * x2**3) ** 2
 
 
 def polyquartic2d(x: NDArray[np.floating]) -> float:
     x1, x2 = float(x[0]), float(x[1])
-    return 2.0 * x1 ** 2 - 4.0 * x1 * x2 + x2 ** 4 + 2.0
+    return 2.0 * x1**2 - 4.0 * x1 * x2 + x2**4 + 2.0
 
 
-FUNC_REGISTRY: Dict[str, FuncSpec] = {
-    "rosenbrock": FuncSpec("rosenbrock", rosenbrock_2d, 2, "Rosenbrock 2D: (1-x)^2 + 100(y-x^2)^2",
-                           "Глобальный минимум в (1, 1)."),
-    "rosenbrock_nd": FuncSpec("rosenbrock_nd", rosenbrock_nd, None,
-                              "Rosenbrock nD: sum 100(x_{i+1}-x_i^2)^2 + (1-x_i)^2", "Глобальный минимум в (1,…,1)."),
-    "quadratic2d": FuncSpec("quadratic2d", quadratic2d, 2, "Quadratic 2D: (x-2)^2 + (y+1)^2",
-                            "Глобальный минимум в (2, -1)."),
-    "rastrigin": FuncSpec("rastrigin", rastrigin, None, "Rastrigin nD: 10n + sum(x^2 - 10 cos 2πx)",
-                          "Много локальных минимумов, глобальный в (0,…,0)."),
-    "himmelblau": FuncSpec("himmelblau", himmelblau, 2, "Himmelblau 2D",
-                           "Четыре глобальных минимума: (3,2), (-2.805, 3.131), (-3.779, -3.283), (3.584, -1.848)."),
+FUNC_REGISTRY: dict[str, FuncSpec] = {
+    "rosenbrock": FuncSpec(
+        "rosenbrock", rosenbrock_2d, 2, "Rosenbrock 2D: (1-x)^2 + 100(y-x^2)^2", "Глобальный минимум в (1, 1)."
+    ),
+    "rosenbrock_nd": FuncSpec(
+        "rosenbrock_nd",
+        rosenbrock_nd,
+        None,
+        "Rosenbrock nD: sum 100(x_{i+1}-x_i^2)^2 + (1-x_i)^2",
+        "Глобальный минимум в (1,…,1).",
+    ),
+    "quadratic2d": FuncSpec(
+        "quadratic2d", quadratic2d, 2, "Quadratic 2D: (x-2)^2 + (y+1)^2", "Глобальный минимум в (2, -1)."
+    ),
+    "rastrigin": FuncSpec(
+        "rastrigin",
+        rastrigin,
+        None,
+        "Rastrigin nD: 10n + sum(x^2 - 10 cos 2πx)",
+        "Много локальных минимумов, глобальный в (0,…,0).",
+    ),
+    "himmelblau": FuncSpec(
+        "himmelblau",
+        himmelblau,
+        2,
+        "Himmelblau 2D",
+        "Четыре глобальных минимума: (3,2), (-2.805, 3.131), (-3.779, -3.283), (3.584, -1.848).",
+    ),
     "beale": FuncSpec("beale", beale, 2, "Beale 2D", "Глобальный минимум в (3, 0.5)."),
-    "polyquartic2d": FuncSpec("polyquartic2d", polyquartic2d, 2, "2x^2 - 4xy + y^4 + 2",
-                              "Два глобальных минимума: (1,1) и (-1,-1)."),
+    "polyquartic2d": FuncSpec(
+        "polyquartic2d", polyquartic2d, 2, "2x^2 - 4xy + y^4 + 2", "Два глобальных минимума: (1,1) и (-1,-1)."
+    ),
 }
 
 
@@ -389,9 +407,15 @@ def list_functions() -> str:
 
 _ALLOWED_GLOBALS = {
     "np": np,
-    "sin": np.sin, "cos": np.cos, "tan": np.tan,
-    "exp": np.exp, "log": np.log, "sqrt": np.sqrt,
-    "abs": np.abs, "pi": np.pi, "e": np.e,
+    "sin": np.sin,
+    "cos": np.cos,
+    "tan": np.tan,
+    "exp": np.exp,
+    "log": np.log,
+    "sqrt": np.sqrt,
+    "abs": np.abs,
+    "pi": np.pi,
+    "e": np.e,
 }
 
 
@@ -422,7 +446,7 @@ def build_custom_function(expr: str, dim: int) -> Callable[[NDArray[np.floating]
         # Py3.13-safe: подсовываем __import__ как вызываемую заглушку
         safe_globals = {"__builtins__": {"__import__": _no_import}, **_ALLOWED_GLOBALS}
 
-        val = eval(expr, safe_globals, locals_map)  # noqa: S307 (осознанно, sandbox-глобалы)
+        val = eval(expr, safe_globals, locals_map)
         return float(val)
 
     return f
@@ -432,11 +456,12 @@ def build_custom_function(expr: str, dim: int) -> Callable[[NDArray[np.floating]
 #  Визуализация 2D (по запросу)
 # =========================
 
+
 def visualize_2d_contours_and_path(
-        f: Callable[[NDArray[np.floating]], float],
-        traj: NDArray[np.floating],
-        minima_hint: Optional[str] = None,
-        title: str = "Gradient Descent Trajectory (2D)"
+    f: Callable[[NDArray[np.floating]], float],
+    traj: NDArray[np.floating],
+    minima_hint: str | None = None,
+    title: str = "Gradient Descent Trajectory (2D)",
 ) -> None:
     """
     Рисует 2D-контуры f и поверх — траекторию GD. Требует matplotlib.
@@ -470,9 +495,9 @@ def visualize_2d_contours_and_path(
     ax = fig.add_subplot(111)
     levels = np.linspace(np.nanmin(Z), np.nanpercentile(Z, 95), 25)
     ax.contour(X, Y, Z, levels=levels)
-    ax.plot(traj[:, 0], traj[:, 1], marker='o', markersize=2, linewidth=1, label="trajectory")
-    ax.scatter([traj[0, 0]], [traj[0, 1]], s=60, marker='s', label="start")
-    ax.scatter([traj[-1, 0]], [traj[-1, 1]], s=60, marker='*', label="end")
+    ax.plot(traj[:, 0], traj[:, 1], marker="o", markersize=2, linewidth=1, label="trajectory")
+    ax.scatter([traj[0, 0]], [traj[0, 1]], s=60, marker="s", label="start")
+    ax.scatter([traj[-1, 0]], [traj[-1, 1]], s=60, marker="*", label="end")
 
     if minima_hint:
         ax.set_title(f"{title}\n{minima_hint}")
@@ -489,7 +514,8 @@ def visualize_2d_contours_and_path(
 #  CLI + интерактив
 # =========================
 
-def parse_args(argv: Optional[List[str]] = None) -> argparse.Namespace:
+
+def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     p = argparse.ArgumentParser(description="Universal GD with Armijo. Registry, custom input, early stop, auto x0.")
     p.add_argument("--func", help="Function key from registry (see --list). If omitted, interactive mode starts.")
     p.add_argument("--list", action="store_true", help="List available functions and exit.")
@@ -513,8 +539,9 @@ def parse_args(argv: Optional[List[str]] = None) -> argparse.Namespace:
     return p.parse_args(argv)
 
 
-def _explain_and_print(label: str, x_star: np.ndarray, f_star: float, iters: int, meta: dict,
-                       spec: Optional[FuncSpec]) -> None:
+def _explain_and_print(
+    label: str, x_star: np.ndarray, f_star: float, iters: int, meta: dict, spec: FuncSpec | None
+) -> None:
     """
     Красивый человекочитаемый отчет.
     """
@@ -544,11 +571,11 @@ def _explain_and_print(label: str, x_star: np.ndarray, f_star: float, iters: int
 
 
 def run_gd(
-        f: Callable[[NDArray[np.floating]], float],
-        x0: NDArray[np.floating],
-        args: argparse.Namespace,
-        label: str,
-        spec: Optional[FuncSpec] = None
+    f: Callable[[NDArray[np.floating]], float],
+    x0: NDArray[np.floating],
+    args: argparse.Namespace,
+    label: str,
+    spec: FuncSpec | None = None,
 ) -> None:
     gd = GradientDescent(
         f=f,
@@ -565,8 +592,10 @@ def run_gd(
         log_every=args.log_every,
     )
     x_star, f_star, iters, hist_f, meta, traj = gd.run(x0)
-    print(f"[GD] {label} -> x={x_star}, f={f_star:.12e}, iters={iters}, stop={meta['stop_reason']}, "
-          f"||g||={meta['grad_norm']:.3e}, alpha={meta['alpha']:.2e}, bt_red={meta['bt_reductions']}")
+    print(
+        f"[GD] {label} -> x={x_star}, f={f_star:.12e}, iters={iters}, stop={meta['stop_reason']}, "
+        f"||g||={meta['grad_norm']:.3e}, alpha={meta['alpha']:.2e}, bt_red={meta['bt_reductions']}"
+    )
     _explain_and_print(label, x_star, f_star, iters, meta, spec)
 
     if args.compare_scipy:
@@ -607,8 +636,9 @@ def interactive_flow(args: argparse.Namespace) -> int:
             dim = spec.dim
             use_auto = input(f"Автовыбрать x0 размерности {dim}? [y/N]: ").strip().lower() == "y"
             if use_auto:
-                x0 = autoselect_x0(spec.func, dim, samples=args.auto_x0_samples, radius=args.auto_x0_radius,
-                                   seed=args.auto_x0_seed)
+                x0 = autoselect_x0(
+                    spec.func, dim, samples=args.auto_x0_samples, radius=args.auto_x0_radius, seed=args.auto_x0_seed
+                )
                 print(f"[auto-x0] выбран старт: x0={x0}")
                 run_gd(spec.func, x0, args, label=spec.name, spec=spec)
                 return 0
@@ -654,12 +684,12 @@ def interactive_flow(args: argparse.Namespace) -> int:
         return 2
 
 
-def parse_args_top(argv: Optional[List[str]] = None) -> argparse.Namespace:
+def parse_args_top(argv: list[str] | None = None) -> argparse.Namespace:
     # Оставлено для обратной совместимости с твоими call-сценариями
     return parse_args(argv)
 
 
-def main(argv: Optional[List[str]] = None) -> int:
+def main(argv: list[str] | None = None) -> int:
     args = parse_args_top(argv)
 
     if args.list:
@@ -681,12 +711,15 @@ def main(argv: Optional[List[str]] = None) -> int:
     if args.auto_x0:
         if dim is None:
             if args.x0 is None:
-                print("[ERROR] For dim=any functions with --auto-x0, please supply --x0 to define dimension.",
-                      file=sys.stderr)
+                print(
+                    "[ERROR] For dim=any functions with --auto-x0, please supply --x0 to define dimension.",
+                    file=sys.stderr,
+                )
                 return 2
             dim = len(args.x0.split(","))
-        x0 = autoselect_x0(spec.func, dim, samples=args.auto_x0_samples, radius=args.auto_x0_radius,
-                           seed=args.auto_x0_seed)
+        x0 = autoselect_x0(
+            spec.func, dim, samples=args.auto_x0_samples, radius=args.auto_x0_radius, seed=args.auto_x0_seed
+        )
     else:
         if args.x0 is None:
             print("[ERROR] --x0 is required in non-interactive mode (or use --auto-x0).", file=sys.stderr)

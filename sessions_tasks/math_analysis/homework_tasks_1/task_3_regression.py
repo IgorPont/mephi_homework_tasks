@@ -67,17 +67,16 @@
 
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Tuple, Dict
 
 import numpy as np
 import pandas as pd
+from sklearn.linear_model import LinearRegression, SGDRegressor
+from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
-from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
-from sklearn.linear_model import SGDRegressor, LinearRegression
-
 
 # === Реализация с нуля (батч-GD) ===
+
 
 @dataclass
 class GDConfig:
@@ -94,6 +93,7 @@ class GDConfig:
             что модель при каждом запуске обучится на тех же самых данных,
             и результаты сравнения будут стабильными.
     """
+
     lr: float = 1e-2  # 0.01
     max_iter: int = 50_000
     tol: float = 1e-8  # 0.00000001
@@ -180,7 +180,7 @@ class LinearRegressionGD:
         self.w_: np.ndarray | None = None
         self.b_: float | None = None
         # (iter, mse)
-        self.history_: list[Tuple[int, float]] = []
+        self.history_: list[tuple[int, float]] = []
 
         # Инициализируем генератор для воспроизводимости (при желании можно сделать случайные w)
         self._rng = np.random.default_rng(self.cfg.random_state)
@@ -248,7 +248,7 @@ class LinearRegressionGD:
             y_pred = X @ self.w_ + self.b_
 
             # Градиенты по MSE
-            residuals = (y_pred - y)
+            residuals = y_pred - y
             grad_w = (2.0 / N) * (X.T @ residuals)
             grad_b = (2.0 / N) * residuals.sum()
 
@@ -293,7 +293,8 @@ class LinearRegressionGD:
 
 # === Утилиты: метрики и печать ===
 
-def regression_report(y_true: np.ndarray, y_pred: np.ndarray) -> Dict[str, float]:
+
+def regression_report(y_true: np.ndarray, y_pred: np.ndarray) -> dict[str, float]:
     """
     Сводный отчет по метрикам регрессии
     """
@@ -304,7 +305,7 @@ def regression_report(y_true: np.ndarray, y_pred: np.ndarray) -> Dict[str, float
     return {"MSE": mse, "RMSE": rmse, "MAE": mae, "R2": r2}
 
 
-def print_report(title: str, metrics: Dict[str, float]) -> None:
+def print_report(title: str, metrics: dict[str, float]) -> None:
     print(f"\n--- {title} ---")
     print(f"MSE : {metrics['MSE']:.6f}")
     print(f"RMSE: {metrics['RMSE']:.6f}")
@@ -313,6 +314,7 @@ def print_report(title: str, metrics: Dict[str, float]) -> None:
 
 
 # === Основная логика ===
+
 
 def main() -> None:
     """
@@ -351,9 +353,7 @@ def main() -> None:
     y = df[target_name].to_numpy(dtype=float)
 
     # 3) Разбиение на train/test, чтобы модель не подглядывала в тест, метрики на test -> честная оценка.
-    X_tr, X_te, y_tr, y_te = train_test_split(
-        X, y, test_size=0.2, random_state=42
-    )
+    X_tr, X_te, y_tr, y_te = train_test_split(X, y, test_size=0.2, random_state=42)
 
     # 4) Масштабирование признаков
     #    GD чувствителен к масштабу, стандартизация делает ландшафт потерь круглее

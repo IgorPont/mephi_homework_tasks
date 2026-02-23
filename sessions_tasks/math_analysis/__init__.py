@@ -2,8 +2,4 @@
 Домашние и сессионные задания по дисциплине "Математический анализ и теория вероятности".
 """
 
-__all__ = [
-    "homework_tasks_1",
-    "homework_tasks_2",
-    "session01"
-]
+__all__ = ["homework_tasks_1", "homework_tasks_2", "session01"]

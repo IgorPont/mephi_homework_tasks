@@ -38,9 +38,7 @@ def install_requirements(requirements_path: Path) -> None:
 
     print(f"[+] Устанавливаю зависимости из {requirements_path} ...")
     try:
-        subprocess.check_call(
-            [sys.executable, "-m", "pip", "install", "-r", str(requirements_path)]
-        )
+        subprocess.check_call([sys.executable, "-m", "pip", "install", "-r", str(requirements_path)])
         print("[+] Зависимости успешно установлены")
     except subprocess.CalledProcessError as exc:
         print("[!] Ошибка при установке зависимостей")
@@ -90,9 +88,7 @@ def parse_args() -> argparse.Namespace:
     Поддерживаемые флаги:
         -m / --mode: streamlit | notebook
     """
-    parser = argparse.ArgumentParser(
-        description="Запуск учебного проекта UrbanEcoSoundMonitor"
-    )
+    parser = argparse.ArgumentParser(description="Запуск учебного проекта UrbanEcoSoundMonitor")
     parser.add_argument(
         "-m",
         "--mode",

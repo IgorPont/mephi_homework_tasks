@@ -36,7 +36,7 @@ def f(x: float) -> float:
     """
     Задает исходную функцию f(x)
     """
-    return x ** 4 + 3 * x ** 3 - 12 * x ** 2 + 7 * x - 2
+    return x**4 + 3 * x**3 - 12 * x**2 + 7 * x - 2
 
 
 def df(x: float) -> float:
@@ -50,7 +50,7 @@ def df(x: float) -> float:
         (-2)' = 0
     Результат: 4x^3 + 9x^2 - 24x + 7
     """
-    return 4 * x ** 3 + 9 * x ** 2 - 24 * x + 7
+    return 4 * x**3 + 9 * x**2 - 24 * x + 7
 
 
 def d2f(x: float) -> float:
@@ -62,7 +62,7 @@ def d2f(x: float) -> float:
         7 -> 0
     Результат: 12x^2 + 18x - 24
     """
-    return 12 * x ** 2 + 18 * x - 24
+    return 12 * x**2 + 18 * x - 24
 
 
 def newton_optimize(x0: float = 10.0, eps: float = 1e-4, max_iter: int = 100) -> tuple[float, int]:

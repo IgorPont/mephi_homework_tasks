@@ -26,23 +26,22 @@ katrin@ya.com
 """
 
 students_programming = {
-    'bennet@xyz.com',
-    'darcy@abc.com',
-    'margaret@xyz.com',
-    'pa@hhh.com',
-    'marimari@xyz.com',
-    'mallika@yahoo.com',
-    'abc@xyz.com',
-    '0071235@gmail.ru',
+    "bennet@xyz.com",
+    "darcy@abc.com",
+    "margaret@xyz.com",
+    "pa@hhh.com",
+    "marimari@xyz.com",
+    "mallika@yahoo.com",
+    "abc@xyz.com",
+    "0071235@gmail.ru",
 }
 
 students_ml = {
-    'marimari@xyz.com',
-    'darcy@abc.com',
-    '0071235@gmail.ru',
-    'darcy@abc.com',
-    'petr44@xyz.com',
-    'katrin@ya.com',
+    "marimari@xyz.com",
+    "darcy@abc.com",
+    "0071235@gmail.ru",
+    "petr44@xyz.com",
+    "katrin@ya.com",
 }
 
 # Задание 2.6
@@ -61,6 +60,6 @@ len_union_students = len(students_programming | students_ml)
 len_symm_students = len(students_programming ^ students_ml)
 
 if __name__ == "__main__":
-    print(f'На оба вебинара записалось {len_inter_students} студентов.')
-    print(f'Хотя бы одним семинаром заинтересовано {len_union_students} студентов.')
-    print(f'Только одним семинаром заинтересовано {len_symm_students} студентов.')
+    print(f"На оба вебинара записалось {len_inter_students} студентов.")
+    print(f"Хотя бы одним семинаром заинтересовано {len_union_students} студентов.")
+    print(f"Только одним семинаром заинтересовано {len_symm_students} студентов.")

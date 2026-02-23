@@ -11,9 +11,10 @@
     python generate_test_audio.py
 """
 
-from pathlib import Path
-import numpy as np
 import wave
+from pathlib import Path
+
+import numpy as np
 
 SAMPLE_RATE = 16000
 DURATION_SEC = 3.0

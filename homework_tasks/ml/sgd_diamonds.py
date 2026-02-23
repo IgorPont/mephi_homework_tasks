@@ -42,7 +42,7 @@
     poetry run python mephi_homework_tasks/homework_tasks/ml/sgd_diamonds.py
 """
 
-from typing import Any, Dict, List, Tuple
+from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -51,7 +51,7 @@ from sklearn.linear_model import SGDRegressor
 from sklearn.metrics import mean_squared_error
 from sklearn.model_selection import GridSearchCV, train_test_split
 from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import OneHotEncoder, StandardScaler, FunctionTransformer
+from sklearn.preprocessing import FunctionTransformer, OneHotEncoder, StandardScaler
 
 
 def load_data() -> pd.DataFrame:
@@ -72,7 +72,7 @@ def load_data() -> pd.DataFrame:
     return df
 
 
-def preprocess_frame(df: pd.DataFrame) -> Tuple[pd.DataFrame, pd.Series]:
+def preprocess_frame(df: pd.DataFrame) -> tuple[pd.DataFrame, pd.Series]:
     """
     Выполняет препроцессинг на уровне DataFrame (как требует условие задания):
       - удаляет `depth`, `table`, `x`, `y`, `z`;
@@ -98,7 +98,7 @@ def preprocess_frame(df: pd.DataFrame) -> Tuple[pd.DataFrame, pd.Series]:
     return X, y
 
 
-def make_preprocess(numeric_features: List[str], categorical_features: List[str]) -> ColumnTransformer:
+def make_preprocess(numeric_features: list[str], categorical_features: list[str]) -> ColumnTransformer:
     """
     Создает препроцессор признаков для пайплайна sklearn.
 
@@ -138,7 +138,7 @@ def make_preprocess(numeric_features: List[str], categorical_features: List[str]
     return preprocess
 
 
-def make_param_grid() -> Dict[str, Any]:
+def make_param_grid() -> dict[str, Any]:
     """
     Возвращает сетку гиперпараметров для GridSearchCV согласно условию задания.
 
@@ -180,7 +180,7 @@ def make_pipeline(preprocess: ColumnTransformer, random_state: int = 42) -> Pipe
     return pipe
 
 
-def run_experiment(random_state: int = 42) -> Dict[str, Any]:
+def run_experiment(random_state: int = 42) -> dict[str, Any]:
     """
     Полный цикл эксперимента:
       1) загрузка данных,
@@ -208,9 +208,7 @@ def run_experiment(random_state: int = 42) -> Dict[str, Any]:
     X, y = preprocess_frame(df)
 
     # 3) разбиение
-    X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=0.33, random_state=random_state
-    )
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33, random_state=random_state)
 
     # 4) схемы признаков
     numeric_features = ["carat"]

@@ -16,8 +16,8 @@ import re
 from pathlib import Path
 
 from sessions_tasks.programming_in_python.session01.task06_schrodinger_eraser import (
-    erase_random_words,
     erase_in_file,
+    erase_random_words,
 )
 
 # Регулярное выражение для поиска слов любых языков
