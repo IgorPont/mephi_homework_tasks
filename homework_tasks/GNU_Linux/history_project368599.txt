@@ -1,0 +1,159 @@
+# История команд,
+# команды с 1 по 7 не относятся к текущемы заданию,
+# удалены для чистоты
+root@PoligonDeb:~# history
+    7  which setfacl
+    8  apt-get update
+    9  apt-get install -y acl
+   10  groupadd project368599
+   11  groupadd -g 4444 curators
+   12  useradd -u 5501 -g project368599 user1
+   13  useradd -u 5502 -g project368599 user2
+   14  useradd -u 5503 -g project368599 user3
+   15  useradd curator1
+   16  useradd curator2
+   17  usermod -aG curators curator1
+   18  usermod -aG curators curator2
+   19  mkdir /dir-368599
+   20  chown root:project368599 /dir-368599
+   21  chmod 2770 /dir-368599
+   22  setfacl -m u:curator1:rx,u:curator2:rx /dir-368599
+   23  ls -ld /dir-368599
+   24  setfacl -d -m u::rwx,g::rwx,o::---,u:curator1:rx,u:curator2:rx /dir-368599
+   25  ls -ld /dir-368599
+   26  getfacl /dir-368599
+   27  grep -E '^(user1|user2|user3|curator1|curator2):' /etc/passwd
+   28  grep -E '^(project368599|curators):' /etc/group
+   29  su -s /bin/bash user1 -c 'touch /dir-368599/file1 && mkdir /dir-368599/dir1 && ls -l /dir-368599'
+   30  su -s /bin/bash user2 -c 'echo test_from_user2 >> /dir-368599/file1 && cat /dir-368599/file1'
+   31  su -s /bin/bash curator1 -c 'ls -l /dir-368599 && cat /dir-368599/file1'
+   32  su -s /bin/bash curator1 -c 'echo fail >> /dir-368599/file1'
+   33  useradd outsider
+   34  su -s /bin/bash outsider -c 'ls -l /dir-368599'
+   35  history
+
+# Содержимое /etc/passwd
+root@PoligonDeb:~# cat /etc/passwd
+root:x:0:0:root:/root:/bin/bash
+daemon:x:1:1:daemon:/usr/sbin:/usr/sbin/nologin
+bin:x:2:2:bin:/bin:/usr/sbin/nologin
+sys:x:3:3:sys:/dev:/usr/sbin/nologin
+sync:x:4:65534:sync:/bin:/bin/sync
+games:x:5:60:games:/usr/games:/usr/sbin/nologin
+man:x:6:12:man:/var/cache/man:/usr/sbin/nologin
+lp:x:7:7:lp:/var/spool/lpd:/usr/sbin/nologin
+mail:x:8:8:mail:/var/mail:/usr/sbin/nologin
+news:x:9:9:news:/var/spool/news:/usr/sbin/nologin
+uucp:x:10:10:uucp:/var/spool/uucp:/usr/sbin/nologin
+proxy:x:13:13:proxy:/bin:/usr/sbin/nologin
+www-data:x:33:33:www-data:/var/www:/usr/sbin/nologin
+backup:x:34:34:backup:/var/backups:/usr/sbin/nologin
+list:x:38:38:Mailing List Manager:/var/list:/usr/sbin/nologin
+irc:x:39:39:ircd:/run/ircd:/usr/sbin/nologin
+_apt:x:42:65534::/nonexistent:/usr/sbin/nologin
+nobody:x:65534:65534:nobody:/nonexistent:/usr/sbin/nologin
+systemd-network:x:998:998:systemd Network Management:/:/usr/sbin/nologin
+messagebus:x:100:107::/nonexistent:/usr/sbin/nologin
+systemd-timesync:x:997:997:systemd Time Synchronization:/:/usr/sbin/nologin
+sshd:x:101:65534::/run/sshd:/usr/sbin/nologin
+am:x:1000:1000:am,,,:/home/am:/bin/bash
+pontigor:x:1001:1001:,,,:/home/pontigor:/bin/bash
+polkitd:x:996:996:polkit:/nonexistent:/usr/sbin/nologin
+mysql:x:102:109:MariaDB Server,,,:/nonexistent:/bin/false
+user1:x:5501:1002::/home/user1:/bin/sh
+user2:x:5502:1002::/home/user2:/bin/sh
+user3:x:5503:1002::/home/user3:/bin/sh
+curator1:x:5504:5504::/home/curator1:/bin/sh
+curator2:x:5505:5505::/home/curator2:/bin/sh
+outsider:x:5506:5506::/home/outsider:/bin/sh
+
+# Содержимое /etc/group
+root@PoligonDeb:~# cat /etc/group
+root:x:0:
+daemon:x:1:
+bin:x:2:
+sys:x:3:
+adm:x:4:
+tty:x:5:
+disk:x:6:
+lp:x:7:
+mail:x:8:
+news:x:9:
+uucp:x:10:
+man:x:12:
+proxy:x:13:
+kmem:x:15:
+dialout:x:20:
+fax:x:21:
+voice:x:22:
+cdrom:x:24:am
+floppy:x:25:am
+tape:x:26:
+sudo:x:27:am,pontigor
+audio:x:29:am
+dip:x:30:am
+www-data:x:33:
+backup:x:34:
+operator:x:37:
+list:x:38:
+irc:x:39:
+src:x:40:
+shadow:x:42:
+utmp:x:43:
+video:x:44:am
+sasl:x:45:
+plugdev:x:46:am
+staff:x:50:
+games:x:60:
+users:x:100:am,pontigor
+nogroup:x:65534:
+systemd-journal:x:999:
+systemd-network:x:998:
+crontab:x:101:
+input:x:102:
+sgx:x:103:
+kvm:x:104:
+render:x:105:
+netdev:x:106:am
+messagebus:x:107:
+systemd-timesync:x:997:
+_ssh:x:108:
+am:x:1000:
+pontigor:x:1001:
+polkitd:x:996:
+mysql:x:109:
+docker:x:110:
+project368599:x:1002:
+curators:x:4444:curator1,curator2
+curator1:x:5504:
+curator2:x:5505:
+outsider:x:5506:
+
+
+# --- Тесты доступов ---
+
+# От имени user1 попытка создать файл и каталог
+root@PoligonDeb:~# su -s /bin/bash user1 -c 'touch /dir-368599/file1 && mkdir /dir-368599/dir1 && ls -l /dir-368599'
+total 8
+drwxrws---+ 2 user1 project368599 4096 Apr 13 14:50 dir1
+-rw-rw----+ 1 user1 project368599    0 Apr 13 14:50 file1
+
+# От имени user2 попытка создания записи в файл user1
+root@PoligonDeb:~# su -s /bin/bash user2 -c 'echo test_from_user2 >> /dir-368599/file1 && cat /dir-368599/file1'
+test_from_user2
+
+# От имени curator1 попытка чтения файла в директории
+root@PoligonDeb:~# su -s /bin/bash curator1 -c 'ls -l /dir-368599 && cat /dir-368599/file1'
+total 12
+drwxrws---+ 2 user1 project368599 4096 Apr 13 14:50 dir1
+-rw-rw----+ 1 user1 project368599   16 Apr 13 14:51 file1
+test_from_user2
+
+# От имени curator1 попытка записи в файл из директории
+root@PoligonDeb:~# su -s /bin/bash curator1 -c 'echo fail >> /dir-368599/file1'
+bash: line 1: /dir-368599/file1: Permission denied
+
+# Проверка, что посторонний пользователь не видит файлы в директории
+root@PoligonDeb:~# useradd outsider
+root@PoligonDeb:~# su -s /bin/bash outsider -c 'ls -l /dir-368599'
+ls: cannot open directory '/dir-368599': Permission denied
