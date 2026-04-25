@@ -65,6 +65,8 @@ transformers = ">=4.45.0,<5.0.0"
 # Библиотека для анализа аудиосигналов (частоты, спектрограммы, MFCC, Chroma)
 # Часто используется вместе с torchaudio, удобна для feature extraction
 librosa = ">=0.10.0,<0.11.0"
+# Библиотека для
+catboost = "^1.2.10"
 
 [tool.poetry.extras]
 # Группа "notebooks" (ставится командой "poetry install -E notebooks")
