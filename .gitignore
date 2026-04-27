@@ -64,3 +64,6 @@ melb_data.csv
 runs/
 outputs/
 models/
+
+# Датасеты к задаче clustering-physical-activity
+homework_tasks/ml/clustering-physical-activity/data/
