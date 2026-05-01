@@ -57,6 +57,7 @@ melb_data.csv
 *.tsv
 *.parquet
 *.pkl
+*.pmml
 *.joblib
 *.h5
 *.pt
