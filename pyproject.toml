@@ -70,6 +70,8 @@ librosa = ">=0.10.0,<0.11.0"
 catboost = "^1.2.10"
 # Библиотека для экспорта моделей в стандарт Predictive Model Markup Language (PMML)
 nyoka = "^5.5.0"
+# Библиотека для машинного обучения и глубокого обучения
+tensorflow = "^2.21.0"
 
 [tool.poetry.extras]
 # Группа "notebooks" (ставится командой "poetry install -E notebooks")
