@@ -35,19 +35,20 @@ Thumbs.db
 # - csv добавил для корректной работы при сдаче ДЗ -
 # data/
 # *.csv
+catboost_info
 
-# датасет к ДЗ модуля 4 Python для анализа данных
+# Датасет к ДЗ модуля 4 Python для анализа данных
 citibike-tripdata.csv
 
-# датасет к ДЗ модуля 5 Python для анализа данных
+# Датасет к ДЗ модуля 5 Python для анализа данных
 ratings_movies.csv
 orders.csv
 products.csv
 
-# датасет к ДЗ модуля 7 Python для анализа данных
+# Датасет к ДЗ модуля 7 Python для анализа данных
 diabetes_data.csv
 
-# датасет к сессионным заданиям Python для анализа данных
+# Датасет к сессионным заданиям Python для анализа данных
 dst-3.0_16_1_hh_database.csv
 ExchangeRates.csv
 
@@ -63,8 +64,11 @@ melb_data.csv
 *.pt
 *.pth
 runs/
-outputs/
+# outputs/
+# output/
 models/
 
 # Датасеты к задаче clustering-physical-activity
 homework_tasks/ml/clustering-physical-activity/data/
+
+

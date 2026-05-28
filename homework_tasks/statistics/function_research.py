@@ -46,7 +46,7 @@ rng = sp.simplify(rng_left.union(rng_right))
 print("Область значений:", rng)  # -> (-oo, oo)
 
 """
-Исследуйте функцию на чётность
+Исследуйте функцию на четность
 """
 x = sp.symbols("x", real=True)
 f = x**3 / (2 * (x + 5) ** 2)

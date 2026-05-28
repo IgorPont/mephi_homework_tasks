@@ -25,6 +25,6 @@ from sympy.calculus.util import function_range
 x = symbols("x")
 f = 3 / (x**2 - 10)
 
-# Найдём область значений
+# Найдем область значений
 range_f = function_range(f, x, S.Reals)
 print(range_f)
