@@ -66,9 +66,31 @@ melb_data.csv
 runs/
 # outputs/
 # output/
-models/
+# models/
 
 # Датасеты к задаче clustering-physical-activity
 homework_tasks/ml/clustering-physical-activity/data/
+
+# --- Сессионное задание "Sber Auto Subscription" ---
+
+# Исходные большие данные
+sessions_tasks/classical_ml/session02/sber_auto_subscription/data/raw/*
+!sessions_tasks/classical_ml/session02/sber_auto_subscription/data/raw/.gitkeep
+
+# Подготовленные датасеты
+sessions_tasks/classical_ml/session02/sber_auto_subscription/data/processed/*
+!sessions_tasks/classical_ml/session02/sber_auto_subscription/data/processed/.gitkeep
+
+# Обученные модели
+sessions_tasks/classical_ml/session02/sber_auto_subscription/models/*
+!sessions_tasks/classical_ml/session02/sber_auto_subscription/models/.gitkeep
+
+# Результаты запусков
+sessions_tasks/classical_ml/session02/sber_auto_subscription/outputs/*
+!sessions_tasks/classical_ml/session02/sber_auto_subscription/outputs/.gitkeep
+!sessions_tasks/classical_ml/session02/sber_auto_subscription/outputs/figures/
+
+sessions_tasks/classical_ml/session02/sber_auto_subscription/outputs/figures/*
+!sessions_tasks/classical_ml/session02/sber_auto_subscription/outputs/figures/.gitkeep
 
 
