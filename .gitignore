@@ -71,6 +71,9 @@ runs/
 # Датасеты к задаче clustering-physical-activity
 homework_tasks/ml/clustering-physical-activity/data/
 
+# Датасеты к задаче scintillation_detector
+sessions_tasks/classical_ml/session02/scintillation_detector/data/
+
 # --- Сессионное задание "Sber Auto Subscription" ---
 
 # Исходные большие данные

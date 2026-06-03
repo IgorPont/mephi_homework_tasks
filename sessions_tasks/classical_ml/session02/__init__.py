@@ -6,5 +6,6 @@
 
 __all__ = [
     "coursework_classical_ml",
-    "sber_auto_subscription"
+    "sber_auto_subscription",
+    "scintillation_detector"
 ]
