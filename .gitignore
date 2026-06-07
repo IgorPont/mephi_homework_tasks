@@ -59,7 +59,7 @@ melb_data.csv
 *.parquet
 *.pkl
 *.pmml
-*.joblib
+# *.joblib
 *.h5
 *.pt
 *.pth
@@ -73,6 +73,9 @@ homework_tasks/ml/clustering-physical-activity/data/
 
 # Датасеты к задаче scintillation_detector
 sessions_tasks/classical_ml/session02/scintillation_detector/data/
+
+# Датасеты к задаче default_credit_card_clients
+# sessions_tasks/implementation_ml_models/session02/default_credit_card_clients/data
 
 # --- Сессионное задание "Sber Auto Subscription" ---
 

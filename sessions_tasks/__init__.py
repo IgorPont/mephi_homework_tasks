@@ -9,4 +9,7 @@ __all__ = [
     "additional_chapters_higher_mathematics",
     "project_practice",
     "ab_course",
+    "classical_ml",
+    "ethics_of_AI",
+    "implementation_ml_models"
 ]

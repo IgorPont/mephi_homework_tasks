@@ -71,8 +71,11 @@ catboost = "^1.2.10"
 # Библиотека для экспорта моделей в стандарт Predictive Model Markup Language (PMML)
 nyoka = "^5.5.0"
 # Библиотека для машинного обучения и глубокого обучения
-tensorflow = "^2.21.0"     
+tensorflow = "^2.21.0"
+# Для работы с Excel
 openpyxl = "^3.1.5"
+# Веб-приложение
+flask = "^3.1.3"
 
 [tool.poetry.extras]
 # Группа "notebooks" (ставится командой "poetry install -E notebooks")

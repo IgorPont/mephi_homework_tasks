@@ -1,0 +1,9 @@
+services:
+  credit-default-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: credit-default-api
+    ports:
+      - "5001:5001"
+    restart: unless-stopped
