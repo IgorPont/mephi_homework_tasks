@@ -75,3 +75,21 @@ TARGET_ACTIONS = [
     # Общие успешные заявки
     "request_success",
 ]
+
+# Признаки, которые не используются в финальной модели из-за риска data leakage (утечки данных).
+# Они рассчитываются по событиям внутри всей сессии и могут содержать информацию
+# о действиях, произошедших после целевого события
+LEAKAGE_RISK_FEATURES = [
+    "hit_count",
+    "max_hit_number",
+    "unique_page_count",
+    "unique_event_action_count",
+    "unique_event_category_count",
+    "has_view_card",
+    "has_search",
+    "has_pagination",
+    "has_quiz",
+    "has_subscription_interest",
+    "has_phone_interaction",
+    "has_form_interaction",
+]

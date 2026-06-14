@@ -2,7 +2,8 @@
 Модуль обучения модели для проекта анализа сайта "СберАвтоподписка".
 
 Скрипт выполняет:
-    - загрузку подготовленного датасета
+    - загрузку подготовленного датасета без признаков с риском утечки данных
+    - проверку отсутствия leakage-признаков
     - разделение данных на train/test
     - обучение baseline-модели
     - обучение LogisticRegression
@@ -10,65 +11,8 @@
     - сохранение обученного sklearn Pipeline
     - сохранение метрик и предсказаний
 
-Запуск из корня проекта mephi_homework_tasks:
+Пример запуска:
     poetry run python -m sessions_tasks.classical_ml.session02.sber_auto_subscription.src.train_model
-
-Пример вывода:
-
-    Загружаю подготовленный датасет...
-    Размер датасета: (1860042, 34)
-    Распределение target: {0: 0.9662, 1: 0.0338}
-    Количество числовых признаков: 21
-    Количество категориальных признаков: 12
-    X_train: (1488033, 33)
-    X_test: (372009, 33)
-    y_train target rate: 3.3818%
-    y_test target rate: 3.3816%
-
-    Обучаю baseline-модель...
-
-    DummyClassifier
-    Accuracy: 0.9662
-    ROC-AUC: 0.5000
-    Confusion matrix:
-    [[359429      0]
-     [ 12580      0]]
-                  precision    recall  f1-score   support
-
-               0       0.97      1.00      0.98    359429
-               1       0.00      0.00      0.00     12580
-
-        accuracy                           0.97    372009
-       macro avg       0.48      0.50      0.49    372009
-    weighted avg       0.93      0.97      0.95    372009
-
-
-    Обучаю LogisticRegression...
-
-    LogisticRegression
-    Accuracy: 0.8700
-    ROC-AUC: 0.9272
-    Confusion matrix:
-    [[313399  46030]
-     [  2342  10238]]
-                  precision    recall  f1-score   support
-
-               0       0.99      0.87      0.93    359429
-               1       0.18      0.81      0.30     12580
-
-        accuracy                           0.87    372009
-       macro avg       0.59      0.84      0.61    372009
-    weighted avg       0.97      0.87      0.91    372009
-
-
-    Предсказания сохранены: /Users/pontigor/python_test/mephi_homework_tasks/sessions_tasks/classical_ml/
-                            session02/sber_auto_subscription/outputs/predictions.csv
-    Метрики сохранены: /Users/pontigor/python_test/mephi_homework_tasks/sessions_tasks/classical_ml/session02/
-                       sber_auto_subscription/outputs/metrics.json
-    Модель сохранена: /Users/pontigor/python_test/mephi_homework_tasks/sessions_tasks/classical_ml/session02/
-                      sber_auto_subscription/models/model.pkl
-
-    Обучение завершено за 49.72 сек.
 """
 
 import json
@@ -92,6 +36,7 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
 
 from sessions_tasks.classical_ml.session02.sber_auto_subscription.src.config import (
+    LEAKAGE_RISK_FEATURES,
     METRICS_PATH,
     MODEL_PATH,
     OUTPUTS_DIR,
@@ -99,6 +44,29 @@ from sessions_tasks.classical_ml.session02.sber_auto_subscription.src.config imp
     PROCESSED_DATASET_PATH,
     TARGET_COLUMN,
 )
+
+
+def validate_no_leakage_features(X: pd.DataFrame) -> None:
+    """
+    Проверяет, что в обучающей матрице нет признаков с риском утечки данных.
+
+    Аргументы:
+        - X: DataFrame с признаками модели
+
+    Исключения:
+        - ValueError -> если обнаружены признаки с риском data leakage
+    """
+
+    leakage_features = sorted(set(LEAKAGE_RISK_FEATURES).intersection(X.columns))
+
+    if leakage_features:
+        raise ValueError(
+            "В обучающей матрице обнаружены признаки с риском data leakage: "
+            f"{leakage_features}. "
+            "Пересоберите датасет без агрегированных признаков из ga_hits."
+        )
+
+    print("Проверка leakage-признаков: признаки с риском утечки не обнаружены.", flush=True)
 
 
 def load_dataset() -> pd.DataFrame:
@@ -391,6 +359,8 @@ def main() -> None:
 
     X, y = split_features_target(dataset)
 
+    validate_no_leakage_features(X)
+
     numeric_features, categorical_features = get_feature_columns(X)
 
     print(f"Количество числовых признаков: {len(numeric_features)}", flush=True)
@@ -439,6 +409,12 @@ def main() -> None:
     )
 
     metrics = {
+        "dataset": {
+            "rows": int(dataset.shape[0]),
+            "columns": int(dataset.shape[1]),
+            "target_rate": round(float(y.mean()), 4),
+            "leakage_risk_features_used": False,
+        },
         "baseline": {
             "accuracy": baseline_metrics["accuracy"],
             "roc_auc": baseline_metrics["roc_auc"],

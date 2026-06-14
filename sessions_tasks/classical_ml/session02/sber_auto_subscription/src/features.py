@@ -2,12 +2,13 @@
 Модуль генерации признаков для проекта анализа сайта "СберАвтоподписка".
 
 В этом файле собраны функции, которые преобразуют исходные данные
-о визитах и событиях пользователей в признаки для модели машинного обучения.
+о визитах пользователей в признаки для модели машинного обучения.
 
-Основная идея:
-    - признаки на уровне визита берем из ga_sessions
-    - поведенческие признаки агрегируем из ga_hits по session_id
-    - итоговый датасет формируется на уровне одного визита
+Основная идея финальной версии:
+    - target формируется на основе ga_hits
+    - признаки модели формируются только на основе ga_sessions
+    - поведенческие признаки из ga_hits могут использоваться для EDA,
+        но не включаются в финальный датасет модели из-за риска утечки данных
 """
 
 import numpy as np
@@ -82,6 +83,8 @@ BEHAVIOR_ACTION_GROUPS = {
 def prepare_sessions_features(sessions: pd.DataFrame) -> pd.DataFrame:
     """
     Создает признаки на основе таблицы визитов ga_sessions.
+    Эти признаки считаются безопасными для финальной модели, так как доступны
+    на момент начала визита и не используют события пользователя внутри сессии.
 
     Что создается:
         - календарные признаки из visit_date и visit_time
@@ -93,7 +96,7 @@ def prepare_sessions_features(sessions: pd.DataFrame) -> pd.DataFrame:
         - sessions: DataFrame с исходными визитами пользователей
 
     Возвращает:
-        - DataFrame с базовыми признаками на уровне session_id
+        - DataFrame с признаками визита
     """
 
     sessions_features = sessions.copy()
@@ -168,7 +171,10 @@ def create_hits_session_features(hits: pd.DataFrame) -> pd.DataFrame:
     """
     Создает агрегированные признаки по событиям пользователей.
 
-    Все признаки считаются на уровне session_id.
+    Важно:
+        Эти признаки рассчитываются по всей сессии и не используются
+        в финальной модели из-за риска data leakage.
+        Они могут применяться только для EDA и анализа поведения пользователей.
 
     Что создается:
         - количество событий в визите
@@ -206,15 +212,15 @@ def create_behavior_features(
     """
     Создает бинарные поведенческие признаки на уровне визита.
 
-    Для каждой группы действий проверяется, было ли в рамках session_id
-    хотя бы одно событие из заданного списка.
+    Важно:
+        Эти признаки рассчитываются по событиям внутри всей сессии.
+        В финальной модели они не используются, так как могут содержать
+        информацию о событиях после целевого действия.
+        Функция оставлена для EDA и бизнес-интерпретации поведения пользователей.
 
     Аргументы:
         - hits: DataFrame с событиями пользователей
-        - action_groups (словарь вида):
-            {
-                "название_признака": ["event_action_1", "event_action_2"]
-            }
+        - action_groups: словарь групп event_action
 
     Возвращает:
         - DataFrame с session_id и бинарными поведенческими признаками
@@ -293,13 +299,17 @@ def build_model_dataset(
     """
     Собирает итоговый датасет для обучения модели.
 
+    Финальная постановка задачи:
+        - target формируется на основе событий из ga_hits
+        - признаки модели формируются только на основе ga_sessions
+        - агрегированные признаки из ga_hits не включаются в модель,
+          так как могут приводить к data leakage
+
     Порядок действий:
         1. Формирует target на уровне визитов
         2. Создает признаки из ga_sessions
-        3. Создает агрегированные признаки из ga_hits
-        4. Создает бинарные поведенческие признаки из ga_hits
-        5. Объединяет все признаки в один DataFrame
-        6. Удаляет технические поля, которые не нужны модели
+        3. Удаляет технические и нерелевантные поля
+        4. Возвращает итоговый датасет для обучения
 
     Аргументы:
         - sessions: DataFrame с визитами пользователей
@@ -318,53 +328,9 @@ def build_model_dataset(
         target_column=target_column,
     )
 
-    session_ids = sessions_with_target[["session_id"]].copy()
+    model_dataset = prepare_sessions_features(sessions_with_target)
 
-    sessions_features = prepare_sessions_features(sessions_with_target)
-
-    hits_session_features = create_hits_session_features(hits)
-    behavior_features = create_behavior_features(hits)
-
-    model_dataset = (
-        session_ids
-        .join(sessions_features)
-        .merge(
-            hits_session_features,
-            on="session_id",
-            how="left",
-        )
-        .merge(
-            behavior_features,
-            on="session_id",
-            how="left",
-        )
-    )
-
-    numeric_fill_columns = [
-        "hit_count",
-        "max_hit_number",
-        "unique_page_count",
-        "unique_event_action_count",
-        "unique_event_category_count",
-        *BEHAVIOR_ACTION_GROUPS.keys(),
-    ]
-
-    existing_numeric_fill_columns = [
-        column
-        for column in numeric_fill_columns
-        if column in model_dataset.columns
-    ]
-
-    model_dataset[existing_numeric_fill_columns] = (
-        model_dataset[existing_numeric_fill_columns]
-        .fillna(0)
-    )
-
-    # Признаки, которые удалем перед обучением
     columns_to_drop = [
-        # Технический идентификатор визита
-        "session_id",
-
         # Почти полностью пустой признак,
         # по результатам EDA в нем около 99% пропусков
         "device_model",
@@ -372,11 +338,6 @@ def build_model_dataset(
         # Вспомогательный признак,
         # в скриптовой версии используются is_organic_traffic и is_paid_traffic
         "traffic_type",
-
-        # Потенциальная утечка целевой переменной,
-        # признаки отражают позднюю стадию заполнения формы или ввода телефона
-        "has_form_interaction",
-        "has_phone_interaction",
     ]
 
     existing_columns_to_drop = [
