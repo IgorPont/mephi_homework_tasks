@@ -11,5 +11,5 @@ __all__ = [
     "ab_course",
     "classical_ml",
     "ethics_of_AI",
-    "implementation_ml_models"
+    "implementation_ml_models",
 ]

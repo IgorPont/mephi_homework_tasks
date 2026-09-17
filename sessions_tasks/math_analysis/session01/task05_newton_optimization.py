@@ -65,7 +65,9 @@ def d2f(x: float) -> float:
     return 12 * x**2 + 18 * x - 24
 
 
-def newton_optimize(x0: float = 10.0, eps: float = 1e-4, max_iter: int = 100) -> tuple[float, int]:
+def newton_optimize(
+    x0: float = 10.0, eps: float = 1e-4, max_iter: int = 100
+) -> tuple[float, int]:
     """
     Реализация метода Ньютона для поиска стационарной точки (экстремума)
 
@@ -80,7 +82,9 @@ def newton_optimize(x0: float = 10.0, eps: float = 1e-4, max_iter: int = 100) ->
     x = float(x0)
     print("\n========= ЗАДАНИЕ 5 - Метод Ньютона для экстремума =========")
     print(f"Старт: x0 = {x0}, eps = {eps}")
-    print(f"{'iter':>4} | {'x':>14} | {'f(x)':>14} | {'f\'(x)':>14} | {'f\"(x)':>14} | {'|Δx|':>10}")
+    print(
+        f"{'iter':>4} | {'x':>14} | {'f(x)':>14} | {'f\'(x)':>14} | {'f\"(x)':>14} | {'|Δx|':>10}"
+    )
     print("-" * 80)
 
     for k in range(1, max_iter + 1):
@@ -91,7 +95,9 @@ def newton_optimize(x0: float = 10.0, eps: float = 1e-4, max_iter: int = 100) ->
 
         if abs(d2) < 1e-12:
             # Защита от деления на очень маленькое число.
-            raise ZeroDivisionError("Вторая производная близка к нулю - шаг Ньютона невозможен")
+            raise ZeroDivisionError(
+                "Вторая производная близка к нулю - шаг Ньютона невозможен"
+            )
 
         # Формула шага Ньютона
         x_next = x - d1 / d2
@@ -123,7 +129,9 @@ def newton_optimize(x0: float = 10.0, eps: float = 1e-4, max_iter: int = 100) ->
     else:
         kind = "не удалось классифицировать (f''(x) = 0)"
 
-    print(f"Результат: x* = {x:.8f}, f(x*) = {f(x):.8f}, f'(x*) = {df(x):.3e}, f''(x*) = {second:.3e}")
+    print(
+        f"Результат: x* = {x:.8f}, f(x*) = {f(x):.8f}, f'(x*) = {df(x):.3e}, f''(x*) = {second:.3e}"
+    )
     print(f"Тип точки: {kind}")
     return x, k
 

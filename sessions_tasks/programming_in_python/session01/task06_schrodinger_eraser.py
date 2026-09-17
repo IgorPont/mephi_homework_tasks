@@ -59,7 +59,9 @@ def erase_random_words(text: str, percent: int) -> str:
     return "".join(chars)
 
 
-def erase_in_file(input_file: str | Path, output_file: str | Path, percent: int) -> None:
+def erase_in_file(
+    input_file: str | Path, output_file: str | Path, percent: int
+) -> None:
     """
     Читает текстовый файл, применяет "стирание" и сохраняет результат.
 
@@ -97,4 +99,6 @@ if __name__ == "__main__":
         output_file="sessions_tasks/programming_in_python/session01/output/task06_output.txt",
         percent=30,
     )
-    print(" ✅ Эффект Шредингера применен!\nРезультат сохранен в output/task06_output.txt")
+    print(
+        " ✅ Эффект Шредингера применен!\nРезультат сохранен в output/task06_output.txt"
+    )

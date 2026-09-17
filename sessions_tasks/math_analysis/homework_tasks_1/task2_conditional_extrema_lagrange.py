@@ -106,7 +106,9 @@ def main() -> None:
     print(f"df/dy + lam*dg/dy = dL/dy = {dLdy}")
     print(f"Ограничение: g(x,y) = 0 -> {g} = 0")
 
-    sol = sp.solve([sp.Eq(dLdx, 0), sp.Eq(dLdy, 0), sp.Eq(g, 0)], (x, y, lam), dict=True)
+    sol = sp.solve(
+        [sp.Eq(dLdx, 0), sp.Eq(dLdy, 0), sp.Eq(g, 0)], (x, y, lam), dict=True
+    )
 
     if not sol:
         print("Решений по Лагранжу не найдено")
@@ -124,8 +126,12 @@ def main() -> None:
     # 3) Сравнение и итоговые выводы
 
     print("\n=== Сравнение результатов (ручной метод против Лагранжа) ===")
-    manual_set = {(sp.simplify(a), sp.simplify(b), sp.simplify(c)) for a, b, c, _ in manual_points}
-    lagr_set = {(sp.simplify(a), sp.simplify(b), sp.simplify(c)) for a, b, c in lagrange_points}
+    manual_set = {
+        (sp.simplify(a), sp.simplify(b), sp.simplify(c)) for a, b, c, _ in manual_points
+    }
+    lagr_set = {
+        (sp.simplify(a), sp.simplify(b), sp.simplify(c)) for a, b, c in lagrange_points
+    }
     print(f"Совпадают ли точки и значения f? -> {manual_set == lagr_set}")
 
     print("\n=== Классификация (по ограничению) ===")
@@ -144,7 +150,9 @@ def main() -> None:
     print("1) Условные стационарные точки по ограничению g(x, y) = 0:")
     print("   - (x, y) = (3, 1),   f = 20 -> локальный минимум по ограничению")
     print("   - (x, y) = (-3, -1), f = -20 -> локальный максимум по ограничению")
-    print("2) По множеству g = 0 функция неограничена сверху и снизу, то есть глобальных экстремумов нет")
+    print(
+        "2) По множеству g = 0 функция неограничена сверху и снизу, то есть глобальных экстремумов нет"
+    )
     print("3) Ручной расчет и метод Лагранжа дают одинаковые точки и значения f")
 
 

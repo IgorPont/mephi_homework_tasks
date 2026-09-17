@@ -66,7 +66,10 @@ def validate_no_leakage_features(X: pd.DataFrame) -> None:
             "Пересоберите датасет без агрегированных признаков из ga_hits."
         )
 
-    print("Проверка leakage-признаков: признаки с риском утечки не обнаружены.", flush=True)
+    print(
+        "Проверка leakage-признаков: признаки с риском утечки не обнаружены.",
+        flush=True,
+    )
 
 
 def load_dataset() -> pd.DataFrame:
@@ -364,7 +367,9 @@ def main() -> None:
     numeric_features, categorical_features = get_feature_columns(X)
 
     print(f"Количество числовых признаков: {len(numeric_features)}", flush=True)
-    print(f"Количество категориальных признаков: {len(categorical_features)}", flush=True)
+    print(
+        f"Количество категориальных признаков: {len(categorical_features)}", flush=True
+    )
 
     X_train, X_test, y_train, y_test = train_test_split(
         X,

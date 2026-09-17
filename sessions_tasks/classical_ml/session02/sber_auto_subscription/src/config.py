@@ -50,14 +50,12 @@ TARGET_ACTIONS = [
     "sub_car_claim_submit_click",
     "sub_car_request_submit_click",
     "sub_custom_question_submit_click",
-
     # Заказ звонка / переход к звонку
     "sub_callback_submit_click",
     "sub_call_number_click",
     "callback requested",
     "form_request_call_sent",
     "click_on_request_call",
-
     # Открытие диалога / чат
     "sub_open_dialog_click",
     "chat requested",
@@ -65,13 +63,11 @@ TARGET_ACTIONS = [
     "client initiate chat",
     "user gave contacts during chat",
     "start_chat",
-
     # GreenDay заявки / звонки / диалоги
     "greenday_sub_submit_success",
     "greenday_sub_callback_submit_click",
     "greenday_sub_call_number_click",
     "greenday_sub_open_dialog_click",
-
     # Общие успешные заявки
     "request_success",
 ]

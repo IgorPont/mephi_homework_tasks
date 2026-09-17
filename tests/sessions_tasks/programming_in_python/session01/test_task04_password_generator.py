@@ -10,7 +10,9 @@
 
 import pytest
 
-from sessions_tasks.programming_in_python.session01.task04_password_generator import generate_password
+from sessions_tasks.programming_in_python.session01.task04_password_generator import (
+    generate_password,
+)
 
 
 def test_generate_password_length():

@@ -4,6 +4,4 @@
 Группа: MIFIML-2.
 """
 
-__all__ = [
-    "analytical_audit_and_risk_identification"
-]
+__all__ = ["analytical_audit_and_risk_identification"]

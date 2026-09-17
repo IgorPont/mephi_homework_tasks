@@ -64,7 +64,9 @@ def test_erase_random_words_basic():
 
     assert len(result) == len(text), "Длина результата должна совпадать с исходной"
     # считаем стертые слова (без учета пунктуации)
-    assert _count_erased_words_by_spans(text, result) == expected_erased, "Стертое число слов не совпало с ожиданием"
+    assert (
+        _count_erased_words_by_spans(text, result) == expected_erased
+    ), "Стертое число слов не совпало с ожиданием"
     # проверяем замену
     assert "." in result
 
@@ -98,5 +100,7 @@ def test_erase_in_file_io(tmp_path: Path):
 
     assert output_file.exists(), "Выходной файл должен быть создан"
     result = output_file.read_text(encoding="utf-8")
-    assert len(result) == len(input_text), "Длина результата должна совпадать с исходной"
+    assert len(result) == len(
+        input_text
+    ), "Длина результата должна совпадать с исходной"
     assert "." in result

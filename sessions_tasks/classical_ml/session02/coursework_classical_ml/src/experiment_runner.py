@@ -14,7 +14,12 @@ import time
 import numpy as np
 import pandas as pd
 from sklearn.base import clone
-from sklearn.model_selection import KFold, StratifiedKFold, cross_val_score, train_test_split
+from sklearn.model_selection import (
+    KFold,
+    StratifiedKFold,
+    cross_val_score,
+    train_test_split,
+)
 
 from sessions_tasks.classical_ml.session02.coursework_classical_ml.src.config import (
     CV_FOLDS,
@@ -195,7 +200,9 @@ def run_classification_experiment(
     return results_df, fitted_models
 
 
-def _get_positive_class_probability(model: object, X_test: pd.DataFrame) -> np.ndarray | None:
+def _get_positive_class_probability(
+    model: object, X_test: pd.DataFrame
+) -> np.ndarray | None:
     """
     Возвращает вероятность положительного класса для бинарной классификации.
 

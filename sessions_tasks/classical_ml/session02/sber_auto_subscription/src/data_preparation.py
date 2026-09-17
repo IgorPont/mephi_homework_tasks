@@ -29,8 +29,8 @@ from time import perf_counter
 import pandas as pd
 
 from sessions_tasks.classical_ml.session02.sber_auto_subscription.src.config import (
-    PROCESSED_DATASET_PATH,
     PROCESSED_DATA_DIR,
+    PROCESSED_DATASET_PATH,
     TARGET_ACTIONS,
     TARGET_COLUMN,
 )

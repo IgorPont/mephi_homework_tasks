@@ -17,7 +17,7 @@ packages = [
 # Совместимая версия Python
 # Важно: ограничиваемся 3.13–3.14, чтобы быть совместимыми с torch/torchaudio/triton
 # triton поддерживает Python <3.15, поэтому нельзя заявлять "^3.13" как <4.0
-python = ">=3.13,<3.15"
+python = ">=3.13,<3.14"
 
 # Работа с массивами
 numpy = "^2.1.1"
@@ -76,6 +76,14 @@ tensorflow = "^2.21.0"
 openpyxl = "^3.1.5"
 # Веб-приложение
 flask = "^3.1.3"
+# Пакет для отображения прогресс‑баров
+tqdm = "^4.70.1"
+# Библиотека для обеспечения качества данных
+great-expectations = "^1.23.0"
+# Интерактивная библиотека для разведочного анализа данных (EDA)
+dtale = "^3.22.0"
+# Библиотека для автоматизированного разведочного анализа данных (EDA)
+ydata-profiling = "^4.18.4"
 
 [tool.poetry.extras]
 # Группа "notebooks" (ставится командой "poetry install -E notebooks")
@@ -100,7 +108,7 @@ build-backend = "poetry.core.masonry.api"
 # Ruff (линтер + isort)
 [tool.ruff]
 # Максимальная длина строки
-line-length = 120
+line-length = 88
 # Целевая версия Python
 target-version = "py313"
 # Автоматически исправлять ошибки (где можно)
@@ -129,7 +137,7 @@ combine-as-imports = true
 # Black (форматтер)
 [tool.black]
 # Длина строки (синхронизирована с Ruff)
-line-length = 120
+line-length = 88
 # Форматируем под Python 3.13
 target-version = ["py313"]
 

@@ -237,9 +237,7 @@ def analyze_fairness_metrics(df: pd.DataFrame) -> None:
     print("=" * 80)
 
     invite_rates = (
-        df.groupby("age_group")["model_decision"]
-        .mean()
-        .reset_index(name="invite_rate")
+        df.groupby("age_group")["model_decision"].mean().reset_index(name="invite_rate")
     )
 
     best_invite_rate = invite_rates["invite_rate"].max()

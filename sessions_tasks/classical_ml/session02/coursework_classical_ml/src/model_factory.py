@@ -21,9 +21,11 @@ from sklearn.linear_model import LinearRegression, LogisticRegression, Ridge
 from sklearn.neighbors import KNeighborsClassifier, KNeighborsRegressor
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import FunctionTransformer, StandardScaler
-from sklearn.svm import SVR, SVC
+from sklearn.svm import SVC, SVR
 
-from sessions_tasks.classical_ml.session02.coursework_classical_ml.src.config import RANDOM_STATE
+from sessions_tasks.classical_ml.session02.coursework_classical_ml.src.config import (
+    RANDOM_STATE,
+)
 
 
 def build_scaled_regression_pipeline(model) -> Pipeline:
@@ -122,7 +124,9 @@ def wrap_regressor_with_log_target(model) -> TransformedTargetRegressor:
     return TransformedTargetRegressor(
         regressor=model,
         func=FunctionTransformer(func=lambda y: __import__("numpy").log1p(y)).transform,
-        inverse_func=FunctionTransformer(func=lambda y: __import__("numpy").expm1(y)).transform,
+        inverse_func=FunctionTransformer(
+            func=lambda y: __import__("numpy").expm1(y)
+        ).transform,
     )
 
 
@@ -141,9 +145,13 @@ def get_regression_models(use_log_target: bool = False) -> dict[str, object]:
     models = {
         "dummy_mean": DummyRegressor(strategy="mean"),
         "linear_regression": build_scaled_regression_pipeline(LinearRegression()),
-        "ridge": build_scaled_regression_pipeline(Ridge(alpha=1.0, random_state=RANDOM_STATE)),
+        "ridge": build_scaled_regression_pipeline(
+            Ridge(alpha=1.0, random_state=RANDOM_STATE)
+        ),
         "knn": build_scaled_regression_pipeline(KNeighborsRegressor(n_neighbors=7)),
-        "svr_rbf": build_scaled_regression_pipeline(SVR(kernel="rbf", C=10.0, epsilon=0.1)),
+        "svr_rbf": build_scaled_regression_pipeline(
+            SVR(kernel="rbf", C=10.0, epsilon=0.1)
+        ),
         "random_forest": build_tree_regression_pipeline(
             RandomForestRegressor(
                 n_estimators=300,
@@ -206,7 +214,9 @@ def get_classification_models() -> dict[str, object]:
                 random_state=RANDOM_STATE,
             )
         ),
-        "knn": build_scaled_classification_pipeline(KNeighborsClassifier(n_neighbors=7)),
+        "knn": build_scaled_classification_pipeline(
+            KNeighborsClassifier(n_neighbors=7)
+        ),
         "svc_rbf": build_scaled_classification_pipeline(
             SVC(
                 kernel="rbf",

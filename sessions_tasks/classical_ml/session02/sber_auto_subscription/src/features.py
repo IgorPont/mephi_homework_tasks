@@ -11,7 +11,6 @@
         но не включаются в финальный датасет модели из-за риска утечки данных
 """
 
-import numpy as np
 import pandas as pd
 
 ORGANIC_MEDIUMS = ["organic", "referral", "(none)"]
@@ -118,37 +117,27 @@ def prepare_sessions_features(sessions: pd.DataFrame) -> pd.DataFrame:
     sessions_features["visit_hour"] = sessions_features["visit_time"].dt.hour
 
     sessions_features["is_weekend"] = (
-        sessions_features["visit_weekday"]
-        .isin([5, 6])
-        .astype(int)
+        sessions_features["visit_weekday"].isin([5, 6]).astype(int)
     )
 
     sessions_features["is_organic_traffic"] = (
-        sessions_features["utm_medium"]
-        .isin(ORGANIC_MEDIUMS)
-        .astype(int)
+        sessions_features["utm_medium"].isin(ORGANIC_MEDIUMS).astype(int)
     )
 
     sessions_features["is_paid_traffic"] = (
-        ~sessions_features["utm_medium"]
-        .isin(ORGANIC_MEDIUMS)
+        ~sessions_features["utm_medium"].isin(ORGANIC_MEDIUMS)
     ).astype(int)
 
     sessions_features["is_social_traffic"] = (
-        sessions_features["utm_source"]
-        .isin(SOCIAL_SOURCES)
-        .astype(int)
+        sessions_features["utm_source"].isin(SOCIAL_SOURCES).astype(int)
     )
 
     sessions_features["is_first_visit"] = (
-        sessions_features["visit_number"]
-        .eq(1)
-        .astype(int)
+        sessions_features["visit_number"].eq(1).astype(int)
     )
 
-    sessions_features["visit_number_clipped"] = (
-        sessions_features["visit_number"]
-        .clip(upper=10)
+    sessions_features["visit_number_clipped"] = sessions_features["visit_number"].clip(
+        upper=10
     )
 
     columns_to_drop = [
@@ -159,9 +148,7 @@ def prepare_sessions_features(sessions: pd.DataFrame) -> pd.DataFrame:
     ]
 
     existing_columns_to_drop = [
-        column
-        for column in columns_to_drop
-        if column in sessions_features.columns
+        column for column in columns_to_drop if column in sessions_features.columns
     ]
 
     return sessions_features.drop(columns=existing_columns_to_drop)
@@ -190,16 +177,12 @@ def create_hits_session_features(hits: pd.DataFrame) -> pd.DataFrame:
         - DataFrame с агрегированными признаками по session_id
     """
 
-    hits_features = (
-        hits
-        .groupby("session_id", as_index=False)
-        .agg(
-            hit_count=("hit_number", "count"),
-            max_hit_number=("hit_number", "max"),
-            unique_page_count=("hit_page_path", "nunique"),
-            unique_event_action_count=("event_action", "nunique"),
-            unique_event_category_count=("event_category", "nunique"),
-        )
+    hits_features = hits.groupby("session_id", as_index=False).agg(
+        hit_count=("hit_number", "count"),
+        max_hit_number=("hit_number", "max"),
+        unique_page_count=("hit_page_path", "nunique"),
+        unique_event_action_count=("event_action", "nunique"),
+        unique_event_category_count=("event_category", "nunique"),
     )
 
     return hits_features
@@ -232,18 +215,13 @@ def create_behavior_features(
     behavior_features = hits[["session_id"]].drop_duplicates().copy()
 
     for feature_name, actions in action_groups.items():
-        sessions_with_action = (
-            hits.loc[
-                hits["event_action"].isin(actions),
-                "session_id",
-            ]
-            .drop_duplicates()
-        )
+        sessions_with_action = hits.loc[
+            hits["event_action"].isin(actions),
+            "session_id",
+        ].drop_duplicates()
 
         behavior_features[feature_name] = (
-            behavior_features["session_id"]
-            .isin(sessions_with_action)
-            .astype(int)
+            behavior_features["session_id"].isin(sessions_with_action).astype(int)
         )
 
     return behavior_features
@@ -273,18 +251,13 @@ def create_target(
 
     sessions_with_target = sessions.copy()
 
-    target_sessions = (
-        hits.loc[
-            hits["event_action"].isin(target_actions),
-            "session_id",
-        ]
-        .drop_duplicates()
-    )
+    target_sessions = hits.loc[
+        hits["event_action"].isin(target_actions),
+        "session_id",
+    ].drop_duplicates()
 
     sessions_with_target[target_column] = (
-        sessions_with_target["session_id"]
-        .isin(target_sessions)
-        .astype(int)
+        sessions_with_target["session_id"].isin(target_sessions).astype(int)
     )
 
     return sessions_with_target
@@ -334,16 +307,13 @@ def build_model_dataset(
         # Почти полностью пустой признак,
         # по результатам EDA в нем около 99% пропусков
         "device_model",
-
         # Вспомогательный признак,
         # в скриптовой версии используются is_organic_traffic и is_paid_traffic
         "traffic_type",
     ]
 
     existing_columns_to_drop = [
-        column
-        for column in columns_to_drop
-        if column in model_dataset.columns
+        column for column in columns_to_drop if column in model_dataset.columns
     ]
 
     final_dataset = model_dataset.drop(columns=existing_columns_to_drop)

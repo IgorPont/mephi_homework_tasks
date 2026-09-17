@@ -104,7 +104,9 @@ w_star = sol[w]
 
 print("Стационарная точка (по Лагранжу):")
 print(f"x* = {x_star}, y* = {y_star}, w* = {w_star}")
-print(f"f(x*, y*) = {f.subs({x: x_star, y: y_star})} ≈ {N(f.subs({x: x_star, y: y_star}))}")
+print(
+    f"f(x*, y*) = {f.subs({x: x_star, y: y_star})} ≈ {N(f.subs({x: x_star, y: y_star}))}"
+)
 
 # -------------------------------
 # МЕТОД 1: Сведение к одномерной задаче
@@ -127,7 +129,11 @@ print(f"Критические точки F'(x)=0: {crit_1d}")
 
 # Берем ту, которая совпадает с x_star
 Fxx_at_star = Fxx.subs(x, x_star)
-kind_1d = "минимум" if Fxx_at_star > 0 else ("максимум" if Fxx_at_star < 0 else "неопределено")
+kind_1d = (
+    "минимум"
+    if Fxx_at_star > 0
+    else ("максимум" if Fxx_at_star < 0 else "неопределено")
+)
 print(f"Классификация по F''(x*): F''(x*) = {Fxx_at_star} -> {kind_1d}")
 
 # -------------------------------
@@ -155,7 +161,9 @@ q = (t.T * Hf * t)[0]  # скаляр
 print("\n[Метод 2] Проекция второй вариации на касательное направление")
 print(f"Гессиан H_f =\n{Hf}")
 print(f"Касательный вектор t = {t.T}")
-print(f"q = t^T * H_f * t = {q} -> {'минимум' if q > 0 else ('максимум' if q < 0 else 'неопределено')}")
+print(
+    f"q = t^T * H_f * t = {q} -> {'минимум' if q > 0 else ('максимум' if q < 0 else 'неопределено')}"
+)
 
 # Замечание: здесь H_f — константная матрица, поэтому q не зависит от точки; если q>0, это минимум вдоль прямой.
 
@@ -181,4 +189,6 @@ for xi, yi, val in vals:
     mark = "  <-- максимум" if (xi, yi) == best_xy else ""
     print(f"x={xi:2d}, y={yi:2d} -> f={val}{mark}")
 
-print(f"\nИтог (целые часы): максимум f достигается при x={best_xy[0]}, y={best_xy[1]}, значение f = {best_val}")
+print(
+    f"\nИтог (целые часы): максимум f достигается при x={best_xy[0]}, y={best_xy[1]}, значение f = {best_val}"
+)

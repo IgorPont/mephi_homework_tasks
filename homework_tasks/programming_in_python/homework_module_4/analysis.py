@@ -321,11 +321,17 @@ if __name__ == "__main__":
     # --- Задание 6.1: количество пропусков в start station id ----------------
     citibike_df = load_citibike()
     missing_start_station_id = count_missing_start_station_id(citibike_df)
-    print(f"[6.1] Количество пропусков в столбце 'start station id': " f"{missing_start_station_id}")
+    print(
+        f"[6.1] Количество пропусков в столбце 'start station id': "
+        f"{missing_start_station_id}"
+    )
 
     # --- Задание 6.2: тип столбцов starttime и stoptime ----------------------
     start_stop_dtype = get_start_stop_dtype_raw()
-    print(f"[6.2] Тип данных столбцов 'starttime' и 'stoptime' " f"при чтении через pd.read_csv: {start_stop_dtype}")
+    print(
+        f"[6.2] Тип данных столбцов 'starttime' и 'stoptime' "
+        f"при чтении через pd.read_csv: {start_stop_dtype}"
+    )
 
     # --- Задание 6.3: самая популярная стартовая станция --------------------
     popular_station = most_popular_start_station(citibike_df)

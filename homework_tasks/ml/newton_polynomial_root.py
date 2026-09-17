@@ -69,7 +69,12 @@ class NewtonRaphson:
         root, info = solver.solve(x0=0.7)
     """
 
-    def __init__(self, f: Callable[[float], float], df: Callable[[float], float], config: NewtonConfig | None = None):
+    def __init__(
+        self,
+        f: Callable[[float], float],
+        df: Callable[[float], float],
+        config: NewtonConfig | None = None,
+    ):
         self.f = f
         self.df = df
         self.cfg = config or NewtonConfig()
@@ -99,9 +104,18 @@ class NewtonRaphson:
             if abs(dfx) < self.cfg.eps_df:
                 # Производная слишком мала — делить опасно.
                 # Попробуем только демпфировать шаг по направлению градиента функции.
-                msg = "Derivative too small; applying damping" if self.cfg.damping else "Derivative too small"
+                msg = (
+                    "Derivative too small; applying damping"
+                    if self.cfg.damping
+                    else "Derivative too small"
+                )
                 if not self.cfg.damping:
-                    return x, {"iterations": k - 1, "converged": False, "last_f": fx, "message": msg}
+                    return x, {
+                        "iterations": k - 1,
+                        "converged": False,
+                        "last_f": fx,
+                        "message": msg,
+                    }
 
             # Базовый шаг Ньютона
             step = fx / dfx if abs(dfx) >= self.cfg.eps_df else 0.0
@@ -167,5 +181,7 @@ if __name__ == "__main__":
     root, info = solver.solve(x0)
 
     print(f"Root ~ {root:.16f}")
-    print(f"Converged: {info['converged']} in {info['iterations']} iterations; f(root) = {info['last_f']:.3e}")
+    print(
+        f"Converged: {info['converged']} in {info['iterations']} iterations; f(root) = {info['last_f']:.3e}"
+    )
     print(f"Answer (rounded to 3 decimals): {root:.3f}")

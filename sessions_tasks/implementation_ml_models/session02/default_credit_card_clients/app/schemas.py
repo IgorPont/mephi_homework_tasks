@@ -53,15 +53,11 @@ def validate_features(data: dict) -> dict:
     if not isinstance(data, dict):
         raise ValueError("Тело запроса должно быть JSON-объектом")
 
-    missing_features = [
-        feature for feature in FEATURE_COLUMNS
-        if feature not in data
-    ]
+    missing_features = [feature for feature in FEATURE_COLUMNS if feature not in data]
 
     if missing_features:
         raise ValueError(
-            "Отсутствуют обязательные признаки: "
-            + ", ".join(missing_features)
+            "Отсутствуют обязательные признаки: " + ", ".join(missing_features)
         )
 
     validated_data = {}

@@ -9,7 +9,9 @@ from pathlib import Path
 
 import pandas as pd
 
-from sessions_tasks.classical_ml.session02.coursework_classical_ml.src.config import DATA_FILE_PATH
+from sessions_tasks.classical_ml.session02.coursework_classical_ml.src.config import (
+    DATA_FILE_PATH,
+)
 
 
 def load_coursework_dataset(file_path: Path = DATA_FILE_PATH) -> pd.DataFrame:

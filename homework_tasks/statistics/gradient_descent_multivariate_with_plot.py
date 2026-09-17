@@ -70,7 +70,9 @@ class GradientDescentLinearRegressor:
         return float((residuals**2).sum() / n)
 
     @staticmethod
-    def _compute_gradient(X: np.ndarray, y: np.ndarray, theta: np.ndarray) -> np.ndarray:
+    def _compute_gradient(
+        X: np.ndarray, y: np.ndarray, theta: np.ndarray
+    ) -> np.ndarray:
         """
         Градиент MSE по θ: (Xᵀ (Xθ - y)) / n.
         Коэффициент 2 поглощен learning_rate.
@@ -144,7 +146,9 @@ class GradientDescentLinearRegressor:
         plt.show()
 
     @staticmethod
-    def plot_convergence_multi(histories: Iterable[tuple[str, list[int], list[float]]]) -> None:
+    def plot_convergence_multi(
+        histories: Iterable[tuple[str, list[int], list[float]]]
+    ) -> None:
         """Сравнивает сходимость при разных значениях alpha."""
         plt.figure(figsize=(9, 5))
         for label, steps, costs in histories:
@@ -190,27 +194,43 @@ if __name__ == "__main__":
     print(f"  b0 (свободный член): {theta[0]:.3f}")
     print("     └ Базовый уровень продаж при нулевых затратах на все каналы рекламы.")
     print(f"  b1 (TV):             {theta[1]:.3f}")
-    print("     └ При увеличении расходов на TV на 1 единицу продажи растут примерно на b1 единиц,")
+    print(
+        "     └ При увеличении расходов на TV на 1 единицу продажи растут примерно на b1 единиц,"
+    )
     print("       если radio и newspaper фиксированы (ceteris paribus).")
     print(f"  b2 (Radio):          {theta[2]:.3f}")
-    print("     └ Аналогично для радио: вклад в рост продаж при неизменности других каналов.")
+    print(
+        "     └ Аналогично для радио: вклад в рост продаж при неизменности других каналов."
+    )
     print(f"  b3 (Newspaper):      {theta[3]:.3f}")
-    print("     └ Если близок к нулю (или отрицателен), влияние рекламных объявлений в газетах")
-    print("       статистически мало или смещения данных не позволяют выявить явный эффект.\n")
+    print(
+        "     └ Если близок к нулю (или отрицателен), влияние рекламных объявлений в газетах"
+    )
+    print(
+        "       статистически мало или смещения данных не позволяют выявить явный эффект.\n"
+    )
 
     print(f"Финальная MSE (среднеквадратичная ошибка): {final_mse:.5f}")
     print("  └ Показывает средний квадрат отклонения предсказаний от истинных продаж.")
-    print("    Меньше — лучше (но сравнивать корректно на одной и той же шкале и выборке).")
+    print(
+        "    Меньше — лучше (но сравнивать корректно на одной и той же шкале и выборке)."
+    )
     print(f"R² (коэффициент детерминации): {r2:.4f}")
     print(
         "  └ Доля дисперсии продаж, объясненная моделью (1.0 — идеальная подгонка, 0.0 — нет улучшения относительно среднего)."
     )
-    print("    Для одного признака TV R² ≈ 0.61 (как в классическом примере), для трех признаков обычно выше.\n")
+    print(
+        "    Для одного признака TV R² ≈ 0.61 (как в классическом примере), для трех признаков обычно выше.\n"
+    )
 
     print("Сходимость (Convergence):")
-    print("  └ Во время обучения значение MSE должно монотонно убывать и выходить на плато.")
+    print(
+        "  └ Во время обучения значение MSE должно монотонно убывать и выходить на плато."
+    )
     print("    Если кривая MSE «пилит» или растет — уменьшите learning_rate (alpha).")
-    print(f"Параметры обучения: alpha = {config.learning_rate}, итераций = {config.n_iter}\n")
+    print(
+        f"Параметры обучения: alpha = {config.learning_rate}, итераций = {config.n_iter}\n"
+    )
 
     # --- Визуализируем сходимость ---
     model.plot_convergence()

@@ -20,7 +20,9 @@ from sklearn.metrics import (
 )
 
 
-def evaluate_regression_model(y_true: pd.Series | np.ndarray, y_pred: np.ndarray) -> dict[str, float]:
+def evaluate_regression_model(
+    y_true: pd.Series | np.ndarray, y_pred: np.ndarray
+) -> dict[str, float]:
     """
     Рассчитывает метрики качества для задачи регрессии.
 
@@ -48,10 +50,15 @@ def evaluate_regression_model(y_true: pd.Series | np.ndarray, y_pred: np.ndarray
     non_zero_mask = y_true_array != 0
 
     if non_zero_mask.any():
-        mape = np.mean(
-            np.abs((y_true_array[non_zero_mask] - y_pred_array[non_zero_mask]) / y_true_array[non_zero_mask]
-                   )
-        ) * 100
+        mape = (
+            np.mean(
+                np.abs(
+                    (y_true_array[non_zero_mask] - y_pred_array[non_zero_mask])
+                    / y_true_array[non_zero_mask]
+                )
+            )
+            * 100
+        )
     else:
         mape = np.nan
 
@@ -94,7 +101,9 @@ def evaluate_classification_model(
     metrics = {
         "accuracy": float(accuracy_score(y_true_array, y_pred_array)),
         "balanced_accuracy": float(balanced_accuracy_score(y_true_array, y_pred_array)),
-        "precision": float(precision_score(y_true_array, y_pred_array, zero_division=0)),
+        "precision": float(
+            precision_score(y_true_array, y_pred_array, zero_division=0)
+        ),
         "recall": float(recall_score(y_true_array, y_pred_array, zero_division=0)),
         "f1": float(f1_score(y_true_array, y_pred_array, zero_division=0)),
     }

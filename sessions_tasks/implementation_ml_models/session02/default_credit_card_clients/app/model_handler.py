@@ -11,11 +11,7 @@ from dataclasses import dataclass
 
 import joblib
 import pandas as pd
-
-from app.config import (
-    AVAILABLE_MODEL_VERSIONS,
-    DEFAULT_MODEL_VERSION
-)
+from app.config import AVAILABLE_MODEL_VERSIONS, DEFAULT_MODEL_VERSION
 from app.schemas import FEATURE_COLUMNS
 
 

@@ -90,7 +90,9 @@ def task_8_1(df: pd.DataFrame) -> pd.DataFrame:
     return df_no_duplicates
 
 
-def task_8_2(df: pd.DataFrame, threshold: float = 0.95) -> tuple[pd.DataFrame, list[str]]:
+def task_8_2(
+    df: pd.DataFrame, threshold: float = 0.95
+) -> tuple[pd.DataFrame, list[str]]:
     """
     Задание 8.2.
     Найти неинформативные признаки и удалить их.
@@ -400,7 +402,10 @@ if __name__ == "__main__":
     diabetes_df = task_8_1(diabetes_df)
     result_8_1: int = diabetes_df.shape[0]
     # Итоговый ответ, который нужно ввести в форму на Stepik
-    print("[8.1] Итоговый ответ (число записей в данных после удаления дубликатов):", result_8_1)
+    print(
+        "[8.1] Итоговый ответ (число записей в данных после удаления дубликатов):",
+        result_8_1,
+    )
 
     # === ЗАДАНИЕ 8.2 ===
     diabetes_df, removed_cols_8_2 = task_8_2(diabetes_df)

@@ -71,8 +71,7 @@ def load_dataframe(
         return pd.read_csv(csv_path)
 
     raise FileNotFoundError(
-        "Не найден файл с данными. "
-        f"Проверены пути: {pkl_path} и {csv_path}"
+        "Не найден файл с данными. " f"Проверены пути: {pkl_path} и {csv_path}"
     )
 
 

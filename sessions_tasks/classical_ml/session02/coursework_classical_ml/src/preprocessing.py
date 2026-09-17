@@ -203,7 +203,9 @@ def build_si_above_median_target(dataframe: pd.DataFrame) -> pd.Series:
     return (dataframe[TARGET_SI] > median_value).astype(int)
 
 
-def build_si_above_threshold_target(dataframe: pd.DataFrame, threshold: float = 8.0) -> pd.Series:
+def build_si_above_threshold_target(
+    dataframe: pd.DataFrame, threshold: float = 8.0
+) -> pd.Series:
     """
     Формирует целевой класс -> SI выше заданного порога.
     Series -> один столбец данных из DataFrame,
@@ -236,10 +238,16 @@ def get_constant_features(features: pd.DataFrame) -> list[str]:
         - Список названий константных признаков.
     """
 
-    return [column for column in features.columns if features[column].nunique(dropna=False) <= 1]
+    return [
+        column
+        for column in features.columns
+        if features[column].nunique(dropna=False) <= 1
+    ]
 
 
-def get_near_constant_features(features: pd.DataFrame, threshold: float = 0.99) -> list[str]:
+def get_near_constant_features(
+    features: pd.DataFrame, threshold: float = 0.99
+) -> list[str]:
     """
     Находит почти константные признаки.
 
@@ -261,9 +269,14 @@ def get_near_constant_features(features: pd.DataFrame, threshold: float = 0.99) 
     near_constant_features = []
 
     for column in features.columns:
-        dominant_value_share = features[column].value_counts(dropna=False, normalize=True).max()
+        dominant_value_share = (
+            features[column].value_counts(dropna=False, normalize=True).max()
+        )
 
-        if dominant_value_share >= threshold and features[column].nunique(dropna=False) > 1:
+        if (
+            dominant_value_share >= threshold
+            and features[column].nunique(dropna=False) > 1
+        ):
             near_constant_features.append(column)
 
     return near_constant_features
@@ -367,7 +380,9 @@ def preprocess_features(
         "constant_features": constant_features,
         "near_constant_features": near_constant_features,
         "highly_correlated_features": highly_correlated_features,
-        "removed_features": constant_features + near_constant_features + highly_correlated_features,
+        "removed_features": constant_features
+        + near_constant_features
+        + highly_correlated_features,
         "remaining_features": cleaned_features.columns.tolist(),
     }
 

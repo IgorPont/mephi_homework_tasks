@@ -122,7 +122,9 @@ def plot_feature_importance(
         final_model = model.named_steps["model"]
 
     if not hasattr(final_model, "feature_importances_"):
-        raise ValueError("Переданная модель не поддерживает атрибут feature_importances_.")
+        raise ValueError(
+            "Переданная модель не поддерживает атрибут feature_importances_."
+        )
 
     importance_df = (
         pd.DataFrame(

@@ -140,7 +140,9 @@ def translate_label(label: str) -> str:
 # --- Утилиты работы с аудио ---
 
 
-def load_audio(file_path: Path, target_sample_rate: int = TARGET_SAMPLE_RATE) -> tuple[np.ndarray, int]:
+def load_audio(
+    file_path: Path, target_sample_rate: int = TARGET_SAMPLE_RATE
+) -> tuple[np.ndarray, int]:
     """
     Загружает аудио-файл и при необходимости ресемплирует (преобразует) его.
 
@@ -180,11 +182,9 @@ def load_audio_classifier(device: str = "cpu"):
         audio_pipe: transformers.pipelines.Pipeline
             Пайплайн `audio-classification`, готовый к инференсу.
     """
-    if device == "cuda":
-        device_index = 0
-    else:
-        # -1 = CPU
-        device_index = -1
+    # 0 => GPU
+    # -1 = CPU
+    device_index = 0 if device == "cuda" else -1
 
     audio_pipe = pipeline(
         task="audio-classification",
@@ -223,7 +223,8 @@ def classify_clip(file_path: Path, audio_pipe, top_k: int = 5) -> ClipPrediction
 
     # Проверяем, есть ли среди предсказаний шумные классы (по английским ключевым словам)
     has_noisy = any(
-        any(keyword.lower() in pred["label"].lower() for keyword in NOISY_KEYWORDS) for pred in raw_predictions
+        any(keyword.lower() in pred["label"].lower() for keyword in NOISY_KEYWORDS)
+        for pred in raw_predictions
     )
 
     return ClipPrediction(
@@ -392,7 +393,8 @@ def sidebar_controls() -> tuple[str, Path | None]:
         return device_choice, None
 
     st.sidebar.info(
-        "Совет: положи свои .wav-файлы (2–4 секунды) в указанную папку, " "они появятся в списке для пакетного анализа",
+        "Совет: положи свои .wav-файлы (2–4 секунды) в указанную папку, "
+        "они появятся в списке для пакетного анализа",
     )
 
     return device_choice, audio_dir
@@ -442,7 +444,11 @@ def main() -> None:
     run_analysis = st.button("🚀 Запустить анализ папки")
 
     if run_analysis:
-        audio_files = [f for f in sorted(audio_dir.iterdir()) if f.is_file() and f.suffix.lower() in AUDIO_EXTENSIONS]
+        audio_files = [
+            f
+            for f in sorted(audio_dir.iterdir())
+            if f.is_file() and f.suffix.lower() in AUDIO_EXTENSIONS
+        ]
 
         if not audio_files:
             st.warning("В папке нет подходящих аудио-файлов")
@@ -489,7 +495,9 @@ def main() -> None:
             options=df_summary["Файл"].tolist(),
         )
 
-        selected = next(item for item in predictions if item.file_path.name == selected_file)
+        selected = next(
+            item for item in predictions if item.file_path.name == selected_file
+        )
 
         st.write(f"**Файл:** `{selected.file_path.name}`")
         st.write("Top-5 предсказаний модели:")
@@ -515,7 +523,9 @@ def main() -> None:
                 "акустическая обстановка выглядит спокойной"
             )
     else:
-        st.info('Нажми кнопку **"🚀 Запустить анализ папки"**, чтобы запустить инференс')
+        st.info(
+            'Нажми кнопку **"🚀 Запустить анализ папки"**, чтобы запустить инференс'
+        )
 
 
 if __name__ == "__main__":

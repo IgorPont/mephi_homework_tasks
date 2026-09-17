@@ -49,7 +49,9 @@ def main() -> None:
     df = pd.read_csv(data_path)
     X_cols, y_col = ["Age_Group", "Test"], "Status"
     if not set(X_cols + [y_col]).issubset(df.columns):
-        raise ValueError(f"Ожидаются столбцы {X_cols + [y_col]}, а получено: {list(df.columns)}")
+        raise ValueError(
+            f"Ожидаются столбцы {X_cols + [y_col]}, а получено: {list(df.columns)}"
+        )
 
     # 3) Кодируем категориальные значения в числовые коды для работы модели с категориальными признаками
     for col in X_cols + [y_col]:
@@ -60,7 +62,9 @@ def main() -> None:
 
     # 4) Разбиваем на обучающую и тестовую выборки (30% тест, фиксируем random_state для повторяемости),
     #    stratify=y - сохраняем пропорции классов в train и test.
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.30, random_state=42, stratify=y)
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=0.30, random_state=42, stratify=y
+    )
 
     # 5) Обучаем наивный Байес для категориальных признаков
     model = CategoricalNB()

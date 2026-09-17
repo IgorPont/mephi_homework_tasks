@@ -98,7 +98,9 @@ def preprocess_frame(df: pd.DataFrame) -> tuple[pd.DataFrame, pd.Series]:
     return X, y
 
 
-def make_preprocess(numeric_features: list[str], categorical_features: list[str]) -> ColumnTransformer:
+def make_preprocess(
+    numeric_features: list[str], categorical_features: list[str]
+) -> ColumnTransformer:
     """
     Создает препроцессор признаков для пайплайна sklearn.
 
@@ -116,7 +118,10 @@ def make_preprocess(numeric_features: list[str], categorical_features: list[str]
     numeric_pipeline = Pipeline(
         steps=[
             # Явная тождественная трансформация с корректными именами фич.
-            ("identity", FunctionTransformer(lambda z: z, feature_names_out="one-to-one")),
+            (
+                "identity",
+                FunctionTransformer(lambda z: z, feature_names_out="one-to-one"),
+            ),
             ("scaler", StandardScaler()),
         ]
     )
@@ -124,7 +129,12 @@ def make_preprocess(numeric_features: list[str], categorical_features: list[str]
     categorical_pipeline = Pipeline(
         steps=[
             # Для sklearn < 1.2 замените sparse_output=False на sparse=False
-            ("ohe", OneHotEncoder(drop="first", handle_unknown="ignore", sparse_output=False)),
+            (
+                "ohe",
+                OneHotEncoder(
+                    drop="first", handle_unknown="ignore", sparse_output=False
+                ),
+            ),
         ]
     )
 
@@ -208,7 +218,9 @@ def run_experiment(random_state: int = 42) -> dict[str, Any]:
     X, y = preprocess_frame(df)
 
     # 3) разбиение
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33, random_state=random_state)
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=0.33, random_state=random_state
+    )
 
     # 4) схемы признаков
     numeric_features = ["carat"]

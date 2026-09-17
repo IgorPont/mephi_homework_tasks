@@ -117,11 +117,19 @@ class TextBlockReverser:
                  либо деление выполняется по параметру block_size.
         """
         has_empty = any(line.strip() == "" for line in lines)
-        blocks = self._split_by_empty_lines(lines) if has_empty else self._split_fixed_size(lines)
+        blocks = (
+            self._split_by_empty_lines(lines)
+            if has_empty
+            else self._split_fixed_size(lines)
+        )
 
         result_blocks: list[str] = []
         for block in blocks:
-            reversed_sentences = [self._reverse_sentence(sentence) for sentence in block if sentence.strip()]
+            reversed_sentences = [
+                self._reverse_sentence(sentence)
+                for sentence in block
+                if sentence.strip()
+            ]
             result_blocks.append("\n".join(reversed_sentences))
 
         return "\n\n".join(result_blocks)
@@ -149,7 +157,9 @@ class TextBlockReverser:
             f.write(result)
 
 
-def reverse_blocks_text(input_file: str | Path, output_file: str | Path, block_size: int = 3) -> None:
+def reverse_blocks_text(
+    input_file: str | Path, output_file: str | Path, block_size: int = 3
+) -> None:
     """
     Функция-обертка для быстрого запуска обработки текстового файла.
 

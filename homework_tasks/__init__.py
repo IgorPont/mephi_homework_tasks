@@ -1,14 +1,17 @@
 """
 Пакет домашних заданий.
-Подпакеты -> по дисциплинам (a_b_tests, linear_algebra ...)
+Подпакеты -> по дисциплинам (ab_course, linear_algebra ...)
 """
 
 __all__ = [
-    "a_b_tests",
+    "ab_course",
+    "GNU_Linux",
     "linear_algebra",
     "ml",
+    "neural_network",
     "probability_theory",
     "programming_in_python",
     "special_sections_of_mathematical_statistics",
     "statistics",
+    "ci_cd",
 ]

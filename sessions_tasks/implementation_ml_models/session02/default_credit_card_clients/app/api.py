@@ -15,17 +15,13 @@ Flask API для сервиса прогнозирования дефолта п
 """
 
 import logging
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from http import HTTPStatus
 
-from flask import Flask, jsonify, request
-
-from app.config import (
-    API_HOST, API_PORT,
-    DEFAULT_MODEL_VERSION
-)
+from app.config import API_HOST, API_PORT, DEFAULT_MODEL_VERSION
 from app.model_handler import ModelHandler
 from app.schemas import validate_features
+from flask import Flask, jsonify, request
 
 # Базовая настройка логирования
 # В prod такие JSON-логи отправляем в ELK, Loki или др систему мониторинга
@@ -52,14 +48,17 @@ def health():
         - tuple: JSON-ответ и HTTP-статус
     """
 
-    return jsonify(
-        {
-            "status": "healthy",
-            "service": "credit-default-prediction-api",
-            "default_model_version": DEFAULT_MODEL_VERSION,
-            "timestamp": datetime.now(timezone.utc).isoformat(),
-        }
-    ), HTTPStatus.OK
+    return (
+        jsonify(
+            {
+                "status": "healthy",
+                "service": "credit-default-prediction-api",
+                "default_model_version": DEFAULT_MODEL_VERSION,
+                "timestamp": datetime.now(UTC).isoformat(),
+            }
+        ),
+        HTTPStatus.OK,
+    )
 
 
 @app.post("/predict")
@@ -117,11 +116,14 @@ def _predict(model_version: str):
         request_data = request.get_json(silent=True)
 
         if request_data is None:
-            return jsonify(
-                {
-                    "error": "Некорректный запрос, ожидается JSON-объект с признаками клиента"
-                }
-            ), HTTPStatus.BAD_REQUEST
+            return (
+                jsonify(
+                    {
+                        "error": "Некорректный запрос, ожидается JSON-объект с признаками клиента"
+                    }
+                ),
+                HTTPStatus.BAD_REQUEST,
+            )
 
         features = validate_features(request_data)
         result = model_handler.predict(
@@ -156,11 +158,14 @@ def _predict(model_version: str):
             }
         )
 
-        return jsonify(
-            {
-                "error": str(exc),
-            }
-        ), HTTPStatus.BAD_REQUEST
+        return (
+            jsonify(
+                {
+                    "error": str(exc),
+                }
+            ),
+            HTTPStatus.BAD_REQUEST,
+        )
 
     except Exception as exc:
         logger.exception(
@@ -171,11 +176,10 @@ def _predict(model_version: str):
             }
         )
 
-        return jsonify(
-            {
-                "error": "Внутренняя ошибка сервиса."
-            }
-        ), HTTPStatus.INTERNAL_SERVER_ERROR
+        return (
+            jsonify({"error": "Внутренняя ошибка сервиса."}),
+            HTTPStatus.INTERNAL_SERVER_ERROR,
+        )
 
 
 if __name__ == "__main__":

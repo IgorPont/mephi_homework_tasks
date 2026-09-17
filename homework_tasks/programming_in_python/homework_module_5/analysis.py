@@ -189,7 +189,9 @@ def task_8_1(df: pd.DataFrame) -> int:
 
     # Дополнительно: считаем количество уникальных фильмов без года,
     # это не требуется заданием, но полезно для самопроверки.
-    unique_missing_movies: int = int(df.loc[df["year_release"].isna(), "movieId"].nunique())
+    unique_missing_movies: int = int(
+        df.loc[df["year_release"].isna(), "movieId"].nunique()
+    )
 
     # Логируем подробную информацию, чтобы было понятно, что происходит
     print("[8.1] Количество строк с отсутствующим годом выпуска:", missing_rows_count)
@@ -409,7 +411,9 @@ def task_8_7(df: pd.DataFrame) -> pd.DataFrame:
     df["year_rating"] = pd.to_datetime(df["date"]).dt.year
 
     # Сводная таблица: средний рейтинг по годам и жанрам
-    pivot = df.pivot_table(index="year_rating", columns="genres", values="rating", aggfunc="mean")
+    pivot = df.pivot_table(
+        index="year_rating", columns="genres", values="rating", aggfunc="mean"
+    )
 
     print("\n[8.7] Сводная таблица (фрагмент):")
     print(pivot.head())
@@ -433,7 +437,10 @@ def task_8_7(df: pd.DataFrame) -> pd.DataFrame:
         if not ser_b.empty:
             best_year_b = int(ser_b.idxmax())
             best_rating_b = ser_b.max()
-            print(f"[8.7][B] Лучший год для {col_b}: {best_year_b}, " f"средний рейтинг = {best_rating_b:.3f}")
+            print(
+                f"[8.7][B] Лучший год для {col_b}: {best_year_b}, "
+                f"средний рейтинг = {best_rating_b:.3f}"
+            )
         else:
             print(f"[8.7][B] Для {col_b} нет значений рейтинга.")
     else:
