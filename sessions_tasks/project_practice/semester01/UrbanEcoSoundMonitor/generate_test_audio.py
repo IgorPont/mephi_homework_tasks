@@ -46,13 +46,13 @@ def main() -> None:
     tone = 0.8 * np.sin(2 * np.pi * 440 * t)
     _write_wav(base_dir / "example_tone_440hz.wav", tone)
 
-    # 2. "Городской шум" — низкий гул + белый шум
+    # 2. "Городской шум" - низкий гул + белый шум
     noise = 0.4 * np.random.randn(len(t))
     low_hum = 0.6 * np.sin(2 * np.pi * 70 * t)
     city_noise = noise + low_hum
     _write_wav(base_dir / "example_city_noise.wav", city_noise)
 
-    # 3. "Сирена" — частотный свип
+    # 3. "Сирена" - частотный свип
     f_start, f_end = 600, 1200
     freq_sweep = np.linspace(f_start, f_end, len(t))
     siren = 0.8 * np.sin(2 * np.pi * freq_sweep * t)

@@ -106,7 +106,7 @@ def task_8_2(
     df : pd.DataFrame
         Очищенная от дублей таблица diabetes_data.
     threshold : float
-        Порог неинформативности (по условию — 0.95).
+        Порог неинформативности (по условию - 0.95).
 
     Returns
     -------
@@ -335,7 +335,7 @@ def task_8_8(df: pd.DataFrame) -> int:
     # Вычисляем z-оценку
     z_scores = (df[col] - mean_val) / std_val
 
-    # Выбросы — где |z| > 3
+    # Выбросы - где |z| > 3
     mask_outliers = z_scores.abs() > 3
     outliers_count = int(mask_outliers.sum())
 

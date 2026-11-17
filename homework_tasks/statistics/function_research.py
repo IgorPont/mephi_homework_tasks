@@ -33,7 +33,7 @@ range_f = sp.calculus.util.function_range(f, x, sp.S.Reals)
 print(range_f)
 """
 # res = sp.calculus.util.function_range(y, x, sp.S.Reals)
-# {x**3/(2*x**2 + 20*x + 50)} — это "задано через формулу", а не готовый интервал.
+# {x**3/(2*x**2 + 20*x + 50)} - это "задано через формулу", а не готовый интервал.
 # Чтобы получить явный интервал, посчитаем диапазон на двух интервалах непрерывности и объединим.
 
 x = sp.Symbol("x", real=True)

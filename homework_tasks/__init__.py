@@ -14,4 +14,5 @@ __all__ = [
     "special_sections_of_mathematical_statistics",
     "statistics",
     "ci_cd",
+    "recommendation_systems",
 ]

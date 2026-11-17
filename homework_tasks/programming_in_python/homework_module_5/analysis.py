@@ -61,7 +61,7 @@ def load_orders(path: Path = ORDERS_FILE) -> pd.DataFrame:
     pd.DataFrame
         Таблица с данными о заказах.
     """
-    # В файле orders.csv разделитель — ';'
+    # В файле orders.csv разделитель - ';'
     df = pd.read_csv(path, sep=";")
     return df
 
@@ -80,7 +80,7 @@ def load_products(path: Path = PRODUCTS_FILE) -> pd.DataFrame:
     pd.DataFrame
         Таблица с данными о товарах.
     """
-    # В файле products.csv разделитель — ';'
+    # В файле products.csv разделитель - ';'
     df = pd.read_csv(path, sep=";")
     return df
 
@@ -111,10 +111,10 @@ def get_year_release(title: str) -> int | None:
     if not isinstance(title, str):
         return None
 
-    # Ищем все вхождения шаблона "(YYYY)" — четыре цифры в скобках
+    # Ищем все вхождения шаблона "(YYYY)" - четыре цифры в скобках
     candidates = re.findall(r"\((\d{4})\)", title)
 
-    # Если ничего не нашли — возвращаем None
+    # Если ничего не нашли - возвращаем None
     if not candidates:
         return None
 
@@ -139,13 +139,13 @@ def load_orders_products(
     в одну таблицу orders_products.
 
     Входные файлы:
-    - orders.csv   — разделитель ';', ключевой столбец "ID товара"
-    - products.csv — разделитель ';', ключевой столбец "Product_ID"
+    - orders.csv   - разделитель ';', ключевой столбец "ID товара"
+    - products.csv - разделитель ';', ключевой столбец "Product_ID"
 
     Используем левое соединение, чтобы сохранить все заказы,
     даже если по какому-то заказу нет информации о товаре.
     """
-    # Читаем исходные таблицы (разделитель — ';')
+    # Читаем исходные таблицы (разделитель - ';')
     orders = pd.read_csv(orders_path, sep=";")
     products = pd.read_csv(products_path, sep=";")
 
@@ -200,7 +200,7 @@ def task_8_1(df: pd.DataFrame) -> int:
         unique_missing_movies,
     )
 
-    # Возвращаем именно число строк — этого требует система проверки
+    # Возвращаем именно число строк - этого требует система проверки
     return missing_rows_count
 
 
@@ -349,7 +349,7 @@ def task_8_6(df: pd.DataFrame) -> str:
         • наибольший средний рейтинг (mean rating),
         • и при этом количество оценок > 10.
 
-    Возвращать строку вида 'Action|Adventure' — без пробелов.
+    Возвращать строку вида 'Action|Adventure' - без пробелов.
 
     Parameters
     ----------
@@ -388,7 +388,7 @@ def task_8_6(df: pd.DataFrame) -> str:
 def task_8_7(df: pd.DataFrame) -> pd.DataFrame:
     """
     Задание 8.7.
-    Добавить признак year_rating — год выставления оценки.
+    Добавить признак year_rating - год выставления оценки.
     Построить сводную таблицу зависимости среднего рейтинга
     от года выставления оценки и сочетания жанров.
 
@@ -484,7 +484,7 @@ def task_8_8(orders_products: pd.DataFrame) -> int:
     Информацию о товаре считаем отсутствующей, если в колонке `Name`
     (название товара из products.csv) стоит NaN.
     """
-    # Ищем строки, где название товара не подтянулось —
+    # Ищем строки, где название товара не подтянулось -
     # это значит, что Product_ID из products.csv для этого заказа не найден
     mask_missing_product = orders_products["Name"].isna()
 

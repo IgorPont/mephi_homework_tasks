@@ -84,6 +84,8 @@ great-expectations = "^1.23.0"
 dtale = "^3.22.0"
 # Библиотека для автоматизированного разведочного анализа данных (EDA)
 ydata-profiling = "^4.18.4"
+# Матричная факторизация SVD
+scikit-surprise = "1.1.5"
 
 [tool.poetry.extras]
 # Группа "notebooks" (ставится командой "poetry install -E notebooks")

@@ -11,7 +11,7 @@
     * можно выбрать функцию из списка;
     * можно ввести свою формулу;
     * можно включить автоподбор начальной точки (--auto-x0 или вопрос в интерактиве).
-- Ранняя остановка по стабилизации функции: если |Δf| мал на протяжении окна — стоп.
+- Ранняя остановка по стабилизации функции: если |Δf| мал на протяжении окна - стоп.
 
 Алгоритм
 --------
@@ -92,7 +92,7 @@ def make_gradient(
     """
     Конструирует ∇f:
       - "auto": попробовать JAX, иначе central-diff
-      - "jax":  JAX, при ошибке — fallback на central-diff
+      - "jax":  JAX, при ошибке - fallback на central-diff
       - "finite": всегда central-diff
     """
     if prefer in ("auto", "jax"):
@@ -116,7 +116,7 @@ def make_gradient(
 
 
 # =========================
-#  ЛИНЕЙНЫЙ ПОИСК (ARMIJO) — устойчивый
+#  ЛИНЕЙНЫЙ ПОИСК (ARMIJO) - устойчивый
 # =========================
 
 
@@ -133,7 +133,7 @@ def backtracking_armijo(
     """
     Подбор шага α по Армихо:
         f(x + α p) ≤ f(x) + c α ⟨∇f(x), p⟩.
-    Возвращает (alpha, reductions), где reductions — сколько раз уменьшали шаг.
+    Возвращает (alpha, reductions), где reductions - сколько раз уменьшали шаг.
     Устойчив к NaN/Inf/исключениям в f(x+αp) и переполнениям в скалярном произведении.
     """
     try:
@@ -246,7 +246,7 @@ class GradientDescent:
         """
         Возвращает: (x_star, f_star, iters, history_f, meta, trajectory)
         meta = { 'stop_reason', 'grad_norm', 'alpha', 'bt_reductions' }
-        trajectory: массив shape (m, n) — точки траектории по итерациям (для визуализации).
+        trajectory: массив shape (m, n) - точки траектории по итерациям (для визуализации).
         """
         x = np.asarray(x0, dtype=float)
         gfun = self._grad()
@@ -500,12 +500,12 @@ def visualize_2d_contours_and_path(
     title: str = "Gradient Descent Trajectory (2D)",
 ) -> None:
     """
-    Рисует 2D-контуры f и поверх — траекторию GD. Требует matplotlib.
+    Рисует 2D-контуры f и поверх - траекторию GD. Требует matplotlib.
     """
     try:
         import matplotlib.pyplot as plt
     except Exception:
-        print("[WARN] matplotlib не установлен — визуализация пропущена.")
+        print("[WARN] matplotlib не установлен - визуализация пропущена.")
         return
 
     if traj.shape[1] != 2:
@@ -665,7 +665,7 @@ def _explain_and_print(
         "f_stabilized": "значение функции стабилизировалось (|Δf| ≤ tol_f в окне)",
         "max_iter": "достигнут лимит итераций (max_iter)",
     }
-    print("\n— РЕЗУЛЬТАТ —")
+    print("\n- РЕЗУЛЬТАТ -")
     print(f"  Функция:           {label}")
     if spec and spec.minima_note:
         print(f"  Подсказка по минимуму: {spec.minima_note}")
@@ -673,18 +673,18 @@ def _explain_and_print(
     print(f"  Значение f(x*):     {f_star:.12e}")
     print(f"  Итераций:           {iters}")
     print(
-        f"  Причина остановки:  {meta.get('stop_reason')} — {reason_map.get(meta.get('stop_reason', ''), '')}"
+        f"  Причина остановки:  {meta.get('stop_reason')} - {reason_map.get(meta.get('stop_reason', ''), '')}"
     )
     print(f"  ||∇f(x*)||:         {meta.get('grad_norm'):.3e}")
     print(f"  Последний шаг α:    {meta.get('alpha'):.3e}")
     print(f"  Backtracking редукций на последнем шаге: {meta.get('bt_reductions')}")
     print("  Пояснение полей:")
-    print("    • x* — найденная точка минимума/стационарная точка.")
-    print("    • f(x*) — значение функции в найденной точке.")
-    print("    • ||∇f|| — насколько «круто» меняется f (ноль на точном минимуме).")
-    print("    • α — фактическая длина шага на последней итерации (после бэктрекинга).")
+    print("    • x* - найденная точка минимума/стационарная точка.")
+    print("    • f(x*) - значение функции в найденной точке.")
+    print("    • ||∇f|| - насколько «круто» меняется f (ноль на точном минимуме).")
+    print("    • α - фактическая длина шага на последней итерации (после бэктрекинга).")
     print(
-        "    • backtracking редукций — сколько раз уменьшали шаг, чтобы выполнить условие Армихо.\n"
+        "    • backtracking редукций - сколько раз уменьшали шаг, чтобы выполнить условие Армихо.\n"
     )
 
 

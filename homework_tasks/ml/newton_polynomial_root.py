@@ -102,7 +102,7 @@ class NewtonRaphson:
             dfx = self.df(x)
 
             if abs(dfx) < self.cfg.eps_df:
-                # Производная слишком мала — делить опасно.
+                # Производная слишком мала - делить опасно.
                 # Попробуем только демпфировать шаг по направлению градиента функции.
                 msg = (
                     "Derivative too small; applying damping"
@@ -121,7 +121,7 @@ class NewtonRaphson:
             step = fx / dfx if abs(dfx) >= self.cfg.eps_df else 0.0
             x_new = x - step
 
-            # При необходимости — демпфирование (линейный поиск по половинному шагу)
+            # При необходимости - демпфирование (линейный поиск по половинному шагу)
             if self.cfg.damping:
                 f_prev_abs = abs(fx)
                 lambda_factor = 1.0
@@ -148,7 +148,7 @@ class NewtonRaphson:
             # Переход к новой точке
             x, fx = x_new, fx_new
 
-        # Если дошли сюда — не сошлось за max_iter
+        # Если дошли сюда - не сошлось за max_iter
         return x, {
             "iterations": self.cfg.max_iter,
             "converged": False,
