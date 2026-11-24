@@ -15,4 +15,5 @@ __all__ = [
     "statistics",
     "ci_cd",
     "recommendation_systems",
+    "time_series",
 ]
